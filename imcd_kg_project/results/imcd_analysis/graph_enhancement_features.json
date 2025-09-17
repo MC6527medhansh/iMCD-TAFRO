@@ -1,0 +1,48 @@
+{
+  "disease_features": {
+    "iMCD-TAFRO": {
+      "TNF_pathway_evidence": 2.0,
+      "IL6_pathway_evidence": 2.0,
+      "CD4_T_cell_involvement": 2.0,
+      "rare_disease": true,
+      "mortality_risk": "high"
+    }
+  },
+  "drug_features": {
+    "adalimumab": {
+      "TNF_inhibitor": true,
+      "experimental_evidence_score": 2.0,
+      "mechanism_match": "direct",
+      "clinical_evidence": true
+    },
+    "tocilizumab": {
+      "IL6_inhibitor": true,
+      "current_standard": true,
+      "limited_efficacy": true
+    },
+    "siltuximab": {
+      "IL6_inhibitor": true,
+      "FDA_approved": true,
+      "limited_efficacy": true
+    }
+  },
+  "gene_features": {
+    "TNF": {
+      "fold_change_naive_cd4": 4.94,
+      "functional_validation": true,
+      "pathway_centrality": "high",
+      "therapeutic_target": true
+    },
+    "IL6": {
+      "pathway_enrichment": "high",
+      "established_target": true
+    }
+  },
+  "cell_type_features": {
+    "naive_CD4_T_cell": {
+      "TNF_production_fold": 2.53,
+      "disease_driver": true,
+      "therapeutic_relevance": "high"
+    }
+  }
+}
