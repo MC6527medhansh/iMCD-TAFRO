@@ -1,0 +1,22 @@
+{
+  "gene_expression": {
+    "TNF": {
+      "log2_fold_change": 4.94,
+      "linear_fold_change": 30.69645181840847,
+      "cell_type": "naive_CD4_T_cell",
+      "evidence_strength": 2.0
+    }
+  },
+  "functional_validation": {
+    "tnf_production_rate": 0.43,
+    "healthy_rate": 0.17,
+    "fold_difference": 2.5294117647058822,
+    "p_value": 0.01
+  },
+  "baseline_performance": {
+    "adalimumab_current_rank": 3,
+    "adalimumab_current_score": 0.83736,
+    "target_rank": 1,
+    "improvement_needed": 2
+  }
+}

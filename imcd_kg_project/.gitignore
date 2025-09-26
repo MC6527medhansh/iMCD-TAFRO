@@ -1,0 +1,46 @@
+# Large data files (8GB+ knowledge graph data)
+data/kgml_data/*.tar.gz
+data/kgml_data/bkg_rtxkg2c_v2.7.3/
+data/kgml_data/training_data/
+
+# KGML-xDTD model files (10GB+ if downloaded)
+src/KGML-xDTD/model_evaluation/models/
+src/KGML-xDTD/model_evaluation/data/
+src/KGML-xDTD/model_evaluation/*.tar.gz
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+.venv
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Results and logs
+results/*/
+*.log
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
