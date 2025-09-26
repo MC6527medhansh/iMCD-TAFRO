@@ -44,3 +44,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Cloned repositories (have their own git history)
+src/KGML-xDTD/
+src/TxGNN/
