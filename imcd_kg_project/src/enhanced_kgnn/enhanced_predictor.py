@@ -96,7 +96,7 @@ class ExperimentalGraphPredictor:
         self.tnf_inhibitor_class = "UMLS:C3653350"
         
         # Training data paths
-        self.training_data_path = Path("../../data/kgml_data/training_data")
+        self.training_data_path = Path(__file__).parent.parent.parent / "data" / "kgml_data" / "training_data"
         
         # Graph components
         self.entity_to_idx = {}
@@ -106,46 +106,46 @@ class ExperimentalGraphPredictor:
         self.edge_labels = None
         
     def load_training_data(self) -> List[Tuple[str, str, int]]:
-        """
-        Load drug-disease pairs from verified training data
-        Returns: List of (drug_id, disease_id, label) tuples
-        """
+        """Load drug-disease pairs from verified training data"""
         pairs = []
         
-        # Load positive pairs from RepoDB and SemMed
-        for file_name in ['repoDB_tp.txt', 'semmed_tp.txt']:
+        # Load positive pairs
+        for file_name in ['repoDB_tp.txt', 'semmed_tp.txt', 'ndf_tp.txt', 'mychem_tp.txt']:
             file_path = self.training_data_path / file_name
             if file_path.exists():
                 df = pd.read_csv(file_path, sep='\t')
-                for _, row in df.iterrows():
-                    if len(row) >= 2:
-                        drug_id = row.iloc[0] if pd.notna(row.iloc[0]) else None
-                        disease_id = row.iloc[1] if pd.notna(row.iloc[1]) else None
-                        # Ensure both are strings and not empty
-                        if drug_id and disease_id and isinstance(drug_id, str) and isinstance(disease_id, str):
+                
+                # Use column names, not positions
+                if 'source' in df.columns and 'target' in df.columns:
+                    for _, row in df.iterrows():
+                        drug_id = str(row['source']) if pd.notna(row['source']) else None
+                        disease_id = str(row['target']) if pd.notna(row['target']) else None
+                        
+                        if drug_id and disease_id:
                             pairs.append((drug_id, disease_id, 1))
         
         # Load negative pairs
-        for file_name in ['repoDB_tn.txt', 'semmed_tn.txt']:
+        for file_name in ['repoDB_tn.txt', 'semmed_tn.txt', 'ndf_tn.txt', 'mychem_tn.txt']:
             file_path = self.training_data_path / file_name
             if file_path.exists():
                 df = pd.read_csv(file_path, sep='\t')
-                for _, row in df.iterrows():
-                    if len(row) >= 2:
-                        drug_id = row.iloc[0] if pd.notna(row.iloc[0]) else None
-                        disease_id = row.iloc[1] if pd.notna(row.iloc[1]) else None
-                        # Ensure both are strings and not empty
-                        if drug_id and disease_id and isinstance(drug_id, str) and isinstance(disease_id, str):
+                
+                if 'source' in df.columns and 'target' in df.columns:
+                    for _, row in df.iterrows():
+                        drug_id = str(row['source']) if pd.notna(row['source']) else None
+                        disease_id = str(row['target']) if pd.notna(row['target']) else None
+                        
+                        if drug_id and disease_id:
                             pairs.append((drug_id, disease_id, 0))
         
         logger.info(f"Loaded {len(pairs)} drug-disease pairs")
         return pairs
-    
+        
     def build_graph_with_experimental_features(self, use_experimental=True):
         """
         Build PyTorch Geometric graph with experimental node features
         """
-        logger.info("Building graph with experimental features...")
+        logger.info(f"Building graph {'WITH' if use_experimental else 'WITHOUT'} experimental features...")
         
         # Load training pairs
         training_pairs = self.load_training_data()
@@ -161,17 +161,27 @@ class ExperimentalGraphPredictor:
             edges.append((drug_id, disease_id))
             labels.append(label)
         
-        # Create entity mappings
-        self.entity_to_idx = {entity: idx for idx, entity in enumerate(sorted(entities))}
+        # Create entity mappings - VALIDATE TYPES FIRST
+        entity_list = sorted(entities)
+        
+        # CRITICAL: Ensure all entities are strings (fixes previous TypeError)
+        entity_list = [str(e) for e in entity_list if e is not None and str(e).strip()]
+        
+        self.entity_to_idx = {entity: idx for idx, entity in enumerate(entity_list)}
         self.idx_to_entity = {idx: entity for entity, idx in self.entity_to_idx.items()}
         
-        num_nodes = len(entities)
+        num_nodes = len(entity_list)
         
-        # Create base node features (one-hot encoding + entity type)
-        node_features = np.zeros((num_nodes, 4))  # Base + experimental features
+        # Create node features with CORRECT dimensionality
+        if use_experimental:
+            num_features = 4  # 3 base + 1 experimental
+        else:
+            num_features = 3  # Just base features
+        
+        node_features = np.zeros((num_nodes, num_features))
         
         for entity, idx in self.entity_to_idx.items():
-            # Entity type features
+            # Entity type features (first 3 dimensions)
             if entity.startswith('CHEMBL.COMPOUND:'):
                 node_features[idx, 0] = 1.0  # Drug
             elif entity.startswith('MONDO:'):
@@ -179,18 +189,22 @@ class ExperimentalGraphPredictor:
             else:
                 node_features[idx, 2] = 1.0  # Other
             
-            # Add experimental features if enabled
+            # Add experimental features ONLY if enabled (4th dimension)
             if use_experimental:
-                # TNF-related entities get experimental features
                 if self._is_tnf_related(entity):
                     node_features[idx, 3] = np.log2(self.experimental_evidence['TNF_fold_change'])
-                    logger.info(f"Added experimental feature to {entity}")
+                    logger.info(f"Added experimental feature to {entity}: {node_features[idx, 3]:.2f}")
         
         # Convert edges to tensor format
         edge_pairs = []
         edge_labels = []
         
         for (drug_id, disease_id), label in zip(edges, labels):
+            # Validate entities exist in mapping
+            if drug_id not in self.entity_to_idx or disease_id not in self.entity_to_idx:
+                logger.warning(f"Skipping edge: {drug_id} -> {disease_id} (entity not in mapping)")
+                continue
+                
             drug_idx = self.entity_to_idx[drug_id]
             disease_idx = self.entity_to_idx[disease_id]
             edge_pairs.append([drug_idx, disease_idx])
@@ -201,6 +215,11 @@ class ExperimentalGraphPredictor:
         self.node_features = torch.tensor(node_features, dtype=torch.float)
         self.edge_index = edge_index
         self.edge_labels = torch.tensor(edge_labels, dtype=torch.float)
+        
+        # VALIDATION: Check shapes before returning
+        logger.info(f"Graph stats: {num_nodes} nodes, {len(edge_pairs)} edges, {num_features}D features")
+        assert self.node_features.shape == (num_nodes, num_features), \
+            f"Feature shape mismatch: expected ({num_nodes}, {num_features}), got {self.node_features.shape}"
         
         # Create PyTorch Geometric data object
         data = Data(x=self.node_features, edge_index=self.edge_index, y=self.edge_labels)
@@ -227,7 +246,9 @@ class ExperimentalGraphPredictor:
         return False
     
     def train_model(self, data, model, epochs=200):
-        """Train GraphSAGE model"""
+        """Train GraphSAGE model with negative sampling"""
+        from torch_geometric.utils import negative_sampling
+        
         data = train_test_split_edges(data, val_ratio=0.1, test_ratio=0.1)
         
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -237,6 +258,13 @@ class ExperimentalGraphPredictor:
         for epoch in range(epochs):
             optimizer.zero_grad()
             
+            # Generate negative samples for this epoch
+            neg_edge_index = negative_sampling(
+                edge_index=data.train_pos_edge_index,
+                num_nodes=data.num_nodes,
+                num_neg_samples=data.train_pos_edge_index.size(1)
+            )
+            
             # Forward pass
             z = model(data.x, data.train_pos_edge_index)
             
@@ -244,8 +272,8 @@ class ExperimentalGraphPredictor:
             pos_pred = model.predict_links(z, data.train_pos_edge_index)
             pos_loss = criterion(pos_pred, torch.ones(pos_pred.size(0)))
             
-            # Negative edges
-            neg_pred = model.predict_links(z, data.train_neg_edge_index)
+            # Negative edges (sampled this epoch)
+            neg_pred = model.predict_links(z, neg_edge_index)
             neg_loss = criterion(neg_pred, torch.zeros(neg_pred.size(0)))
             
             loss = pos_loss + neg_loss
