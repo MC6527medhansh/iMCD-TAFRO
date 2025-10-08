@@ -1,1 +1,4 @@
 imcd_kg_project/src/KGML-xDTD
+
+# Disallow nested repos
+imcd_kg_project/src/KGML-xDTD/.git
