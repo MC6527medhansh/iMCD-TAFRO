@@ -1,0 +1,1339 @@
+source	target
+medroxyprogesterone	systemic lupus erythematosus
+alendronic acid	osteoporosis
+tocophersolan	atherosclerosis
+calcitriol	rickets
+daclizumab	aplastic anemia
+amifostine	neuroblastoma
+melphalan	neuroblastoma
+thiotepa	neuroblastoma
+busulfan	neuroblastoma
+lenograstim	neuroblastoma
+amifostine	retinoblastoma
+melphalan	retinoblastoma
+thiotepa	retinoblastoma
+busulfan	retinoblastoma
+lenograstim	retinoblastoma
+atorvastatin	nephrotic syndrome
+atorvastatin	hyperlipidemia
+warfarin	atherosclerosis
+aspirin	atherosclerosis
+fluoxetine	bipolar disorder
+etoposide	multiple myeloma
+thalidomide	multiple myeloma
+cisplatin	multiple myeloma
+lenograstim	multiple myeloma
+cyclophosphamide	multiple myeloma
+dexamethasone	multiple myeloma
+irinotecan	diarrhea
+octreotide	diarrhea
+imatinib	gastrointestinal stromal tumor
+nitric oxide	pneumonia
+infliximab	juvenile rheumatoid arthritis
+becaplermin	skin ulcer
+abatacept	multiple sclerosis
+methotrexate	dermatomyositis
+prednisone	dermatomyositis
+etanercept	dermatomyositis
+vincristine	ewing sarcoma
+cyclophosphamide	ewing sarcoma
+dexrazoxane	ewing sarcoma
+doxorubicin	ewing sarcoma
+capecitabine/fluorouracil	diarrhea
+cyclophosphamide	scleroderma
+nitric oxide	pulmonary arterial hypertension
+methotrexate	rheumatoid arthritis
+tolcapone	schizophrenia
+micafungin	aspergillosis
+amphotericin b	aspergillosis
+riluzole	bipolar disorder
+rituximab	non-hodgkin lymphoma
+estradiol	postpartum depression
+lamotrigine	bipolar disorder
+lithium	bipolar disorder
+finasteride	benign prostatic hyperplasia
+abciximab	stroke
+melphalan	multiple myeloma
+everolimus	rheumatoid arthritis
+sirolimus	rheumatoid arthritis
+infliximab	temporal arteritis
+alemtuzumab	non-hodgkin lymphoma
+etanercept	juvenile rheumatoid arthritis
+natalizumab	rheumatoid arthritis
+capsaicin	pain
+prednisone	waldenstrom macroglobulinemia
+vincristine	waldenstrom macroglobulinemia
+rituximab	waldenstrom macroglobulinemia
+cyclophosphamide	waldenstrom macroglobulinemia
+doxorubicin	waldenstrom macroglobulinemia
+estradiol	premenstrual dysphoric disorder
+ethinyl estradiol	premenstrual dysphoric disorder
+progesterone	premenstrual dysphoric disorder
+capsaicin	herpes zoster
+capsaicin	neuralgia
+capsaicin	diabetes mellitus
+caspofungin	candidiasis
+bortezomib	waldenstrom macroglobulinemia
+azathioprine	crohn disease
+ibandronic acid	pain
+zoledronic acid	pain
+etoposide	peripheral t-cell lymphoma
+ifosfamide	peripheral t-cell lymphoma
+oxaliplatin	peripheral t-cell lymphoma
+mifepristone	alzheimer's disease
+niacinamide	hyperlipidemia
+niacin	hyperlipidemia
+vorinostat	multiple myeloma
+infliximab	berylliosis
+azacitidine	chronic myelomonocytic leukemia
+decitabine	chronic myelomonocytic leukemia
+busulfan	multiple myeloma
+citalopram	anxiety disorder
+dexetimide	anxiety disorder
+rosiglitazone	endometriosis
+doxorubicin	non-hodgkin lymphoma
+niacinamide	stroke
+simvastatin	stroke
+niacin	stroke
+niacinamide	atherosclerosis
+simvastatin	atherosclerosis
+niacin	atherosclerosis
+niacinamide	myocardial infarction
+simvastatin	myocardial infarction
+niacin	myocardial infarction
+hydroxyurea	stroke
+bortezomib	multiple myeloma
+tobramycin	cystic fibrosis
+hydromorphone	pain
+fentanyl	pain
+retinyl palmitate	vitamin a deficiency
+atorvastatin	familial hypercholesterolemia
+atorvastatin	diabetes mellitus
+alefacept	lichen planus
+aceclofenac	pain
+sildenafil	pulmonary arterial hypertension
+memantine	schizophrenia
+buspirone	schizophrenia
+memantine	chronic schizophrenia
+buspirone	chronic schizophrenia
+tocophersolan	crohn disease
+tocophersolan	ulcerative colitis
+naltrexone	alcohol abuse
+cetirizine	asthma
+adenosine	coronary artery disease
+etoposide	rhabdomyosarcoma
+ifosfamide	rhabdomyosarcoma
+omalizumab	asthma
+celecoxib	osteoarthritis
+fluconazole	hyperlipidemia
+nitroprusside	hyperlipidemia
+octreotide	prader-willi syndrome
+pemetrexed	non-small cell lung carcinoma
+lenalidomide	non-small cell lung carcinoma
+noscapine	non-hodgkin lymphoma
+mitoxantrone	mantle cell lymphoma
+vidarabine	mantle cell lymphoma
+rituximab	mantle cell lymphoma
+propofol	pain
+methotrexate	urticaria
+olanzapine	bipolar disorder
+cyproheptadine	urticaria
+bortezomib	non-small cell lung carcinoma
+rosiglitazone	diabetes mellitus
+cetuximab	non-small cell lung carcinoma
+paroxetine	panic disorder
+buspirone	panic disorder
+donepezil	schizophrenia
+thalidomide	hodgkin lymphoma
+olanzapine	schizophrenia
+tocophersolan	schizophrenia
+vincristine	multiple myeloma
+zoledronic acid	multiple myeloma
+doxorubicin	multiple myeloma
+atomoxetine	schizophrenia
+clozapine	schizophrenia
+rituximab	urticaria
+budesonide	diarrhea
+nitric oxide	pain
+imatinib	chronic myelogenous leukemia
+cytarabine	chronic myelogenous leukemia
+daunorubicin	chronic myelogenous leukemia
+tocophersolan	myocardial infarction
+valproic acid	neuralgia
+alteplase	pulmonary embolism
+capecitabine/fluorouracil	neuroendocrine neoplasm
+oxaliplatin	neuroendocrine neoplasm
+bevacizumab	neuroendocrine neoplasm
+rimonabant	obesity
+topiramate	obesity
+topiramate	hyperlipidemia
+topiramate	hypertriglyceridemia
+sertraline	insomnia
+erythropoietin	rheumatoid arthritis
+clofarabine	multiple myeloma
+hydroxocobalamin	cerebral edema/brain edema
+irbesartan	atrial fibrillation
+clopidogrel	atrial fibrillation
+olsalazine	crohn disease
+octreotide	diabetic retinopathy
+sertraline	alcohol abuse
+etoposide	non-hodgkin lymphoma
+levofloxacin	non-hodgkin lymphoma
+ofloxacin	non-hodgkin lymphoma
+vincristine	non-hodgkin lymphoma
+dexamethasone	non-hodgkin lymphoma
+atorvastatin	atrial fibrillation
+olsalazine	ulcerative colitis
+metronidazole	crohn disease
+ciprofloxacin	crohn disease
+irinotecan	non-small cell lung carcinoma
+carboplatin	non-small cell lung carcinoma
+docetaxel	non-small cell lung carcinoma
+pentobarbital	status epilepticus
+propofol	status epilepticus
+thiopental	status epilepticus
+lamotrigine	epilepsy
+ezetimibe	hyperlipidemia
+simvastatin	hyperlipidemia
+modafinil	pain
+leuprolide	multiple myeloma
+leuprolide	mantle cell lymphoma
+aripiprazole	attention deficit hyperactivity disorder
+mycophenolic acid	rheumatoid arthritis
+alemtuzumab	rheumatoid arthritis
+cyclophosphamide	rheumatoid arthritis
+cyclosporine	rheumatoid arthritis
+desvenlafaxine	pain
+etanercept	lichen planus
+morphine	pain
+bupivacaine	pain
+clonidine	pain
+sorafenib	kaposi sarcoma/kaposi's sarcoma
+buspirone	alzheimer's disease
+buspirone	dementia
+aripiprazole	schizophrenia
+aripiprazole	schizoaffective disorder
+aripiprazole	bipolar disorder
+paclitaxel	non-small cell lung carcinoma
+cisplatin	non-small cell lung carcinoma
+atorvastatin	asthma
+etodolac	multiple myeloma
+levodopa	parkinson's disease
+topiramate	parkinson's disease
+ribavirin	hepatitis c, chronic/chronic hepatitis c virus infection
+folic acid	rheumatoid arthritis
+methylprednisolone	rheumatoid arthritis
+prednisolone	rheumatoid arthritis
+adalimumab	rheumatoid arthritis
+rituximab	rheumatoid arthritis
+etanercept	rheumatoid arthritis
+levetiracetam	obsessive-compulsive disorder
+sertraline	obsessive-compulsive disorder
+amiodarone	atrial fibrillation
+cycloserine	pain
+iloprost	pulmonary arterial hypertension
+bosentan	pulmonary arterial hypertension
+lovastatin	rheumatoid arthritis
+mycophenolic acid	multiple myeloma
+cyclosporine	multiple myeloma
+sunitinib	metastatic melanoma
+temozolomide	metastatic melanoma
+interferon beta-1a	crohn disease
+domperidone	parkinson's disease
+domperidone	peripheral edema
+capecitabine/fluorouracil	pain
+celecoxib	pain
+lenograstim	myocardial infarction
+prednisone	duchenne muscular dystrophy
+adalimumab	sarcoidosis
+everolimus	atherosclerosis
+mycophenolic acid	atherosclerosis
+prednisone	atherosclerosis
+sirolimus	atherosclerosis
+tacrolimus	atherosclerosis
+oxycodone	osteoarthritis
+buprenorphine	osteoarthritis
+prednisone	prostatic neoplasms, castration-resistant/castration-resistant prostate carcinoma
+docetaxel	prostatic neoplasms, castration-resistant/castration-resistant prostate carcinoma
+quetiapine	dementia
+valproic acid	dementia
+meglumine antimoniate/meglumine antimonate	cutaneous leishmaniasis
+nitric oxide	cutaneous leishmaniasis
+flurbiprofen	dementia
+moxifloxacin	neuroblastoma
+bevacizumab	gastrointestinal stromal tumor
+methylprednisolone	asthma
+prednisolone	asthma
+sunitinib	renal cell carcinoma
+dexamethasone	anterior uveitis
+rosiglitazone	alzheimer's disease
+pregabalin	pain
+reboxetine	pain
+milrinone	congestive heart failure/heart failure
+dobutamine	congestive heart failure/heart failure
+lorazepam	status epilepticus
+triamcinolone hexacetonide	rhinitis
+hydroxyurea	pulmonary arterial hypertension
+erlotinib	non-small cell lung carcinoma
+bevacizumab	non-small cell lung carcinoma
+methadone	pain
+pregabalin	herpes zoster
+pregabalin	postherpetic neuralgia
+mycophenolic acid	aplastic anemia
+lenograstim	aplastic anemia
+cyclophosphamide	aplastic anemia
+cyclosporine	aplastic anemia
+fluphenazine	psoriasis
+valproic acid	melanoma
+cisplatin	pain
+proguanil	malaria
+pyrimethamine	malaria
+sulfadoxine	malaria
+dapsone	malaria
+prednisone	non-hodgkin lymphoma
+bortezomib	non-hodgkin lymphoma
+cyclophosphamide	non-hodgkin lymphoma
+lansoprazole	asthma
+dexlansoprazole	asthma
+lorazepam	schizophrenia
+lactulose	hepatic encephalopathy
+rifaximin	hepatic encephalopathy
+cetuximab	multiple myeloma
+icodextrin	congestive heart failure/heart failure
+pregabalin	epilepsy
+sunitinib	gastrointestinal stromal tumor
+tacrolimus	hepatitis c, chronic/chronic hepatitis c virus infection
+cyclosporine	hepatitis c, chronic/chronic hepatitis c virus infection
+temozolomide	glioblastoma
+levetiracetam	epilepsy
+flurbiprofen	alzheimer's disease
+mitomycin	urinary bladder cancer
+clopidogrel	atherosclerosis
+sunitinib	chronic myelomonocytic leukemia
+sunitinib	mast cell leukemia
+minocycline	acne
+infliximab	rheumatoid arthritis
+ezetimibe	diabetes mellitus
+simvastatin	diabetes mellitus
+quetiapine	schizophrenia
+naproxen	osteoarthritis
+paroxetine	major depressive disorder
+lithium	major depressive disorder
+capecitabine/fluorouracil	squamous cell carcinoma
+cisplatin	squamous cell carcinoma
+docetaxel	squamous cell carcinoma
+metoprolol	cardiac arrest
+racepinephrine	cardiac arrest
+metoprolol	ventricular fibrillation
+racepinephrine	ventricular fibrillation
+abatacept	crohn disease
+azacitidine	multiple myeloma
+letrozole	leiomyosarcoma
+etoposide	non-small cell lung carcinoma
+sorafenib	non-small cell lung carcinoma
+everolimus	renal cell carcinoma
+sirolimus	renal cell carcinoma
+aminosalicylic acid	crohn disease
+methylprednisolone	multiple sclerosis
+prednisolone	multiple sclerosis
+nitroglycerin	pancreatitis
+mometasone	sinusitis
+amoxicillin	sinusitis
+clavulanic acid	sinusitis
+methylprednisolone	myasthenia gravis
+cyclophosphamide	myasthenia gravis
+ketoprofen	bursitis
+penicillin g	psoriasis
+mycophenolic acid	systemic lupus erythematosus
+prednisolone	systemic lupus erythematosus
+prednisone	systemic lupus erythematosus
+abatacept	systemic lupus erythematosus
+dutasteride	benign prostatic hyperplasia
+sunitinib	non-small cell lung carcinoma
+anastrozole	obesity
+alemtuzumab	peripheral t-cell lymphoma
+azacitidine	squamous cell carcinoma
+loperamide	diarrhea
+panobinostat	multiple myeloma
+sildenafil	cerebral infarction
+clonidine	multiple sclerosis
+octreotide	pheochromocytoma
+aspirin	multiple sclerosis
+leflunomide	rheumatoid arthritis
+rimonabant	type ii diabetes mellitus/type 2 diabetes mellitus
+paclitaxel	glioblastoma
+lacosamide	osteoarthritis
+folic acid	renal cell carcinoma
+quetiapine	bipolar disorder
+citalopram	depression
+dexetimide	depression
+pemetrexed	renal cell carcinoma
+bevacizumab	renal cell carcinoma
+ketamine	pain
+panobinostat	prostatic neoplasms, castration-resistant/castration-resistant prostate carcinoma
+aspirin	myocardial infarction
+megestrol/megestrol acetate	dementia
+vorinostat	non-small cell lung carcinoma
+prednisone	pain
+azacitidine	pain
+lenograstim	pain
+docetaxel	pain
+azathioprine	systemic lupus erythematosus
+tapentadol	pain
+infliximab	diabetic macular edema
+infliximab	diabetic retinopathy
+everolimus	glioblastoma
+sirolimus	glioblastoma
+natamycin	fungal keratitis
+povidone-iodine	fungal keratitis
+crospovidone/povidone	fungal keratitis
+glyburide	diabetes mellitus
+pioglitazone	diabetes mellitus
+sulfasalazine	rheumatoid arthritis
+chloroquine	rheumatoid arthritis
+magnesium sulfate	asthma
+insulin aspart	asthma
+aceclofenac	otitis externa
+carvedilol	epilepsy
+cholecalciferol	osteoporosis, postmenopausal/postmenopausal osteoporosis
+calcium carbonate	osteoporosis, postmenopausal/postmenopausal osteoporosis
+busulfan	chronic myelogenous leukemia
+ketoprofen	osteoarthritis
+isotretinoin	neuroblastoma
+darbepoetin alfa	congestive heart failure/heart failure
+azathioprine	ulcerative colitis
+infliximab	ulcerative colitis
+lenalidomide	multiple myeloma
+dasatinib	polycythemia vera
+etoposide	neuroblastoma
+carboplatin	neuroblastoma
+acetylcysteine	obsessive-compulsive disorder
+methotrexate	systemic lupus erythematosus
+methylprednisolone	systemic lupus erythematosus
+fondaparinux	venous thrombosis
+pioglitazone	type ii diabetes mellitus/type 2 diabetes mellitus
+rimonabant	schizophrenia
+rimonabant	schizoaffective disorder
+carmustine	glioblastoma
+nicotine	postoperative nausea and vomiting
+methylprednisolone	hemangioma
+prednisolone	hemangioma
+prednisone	hemangioma
+vincristine	hemangioma
+sorafenib	renal cell carcinoma
+omeprazole	acute coronary syndrome
+clopidogrel	acute coronary syndrome
+aspirin	acute coronary syndrome
+omeprazole	myocardial infarction
+clopidogrel	myocardial infarction
+dasatinib	multiple myeloma
+decitabine	renal cell carcinoma
+topiramate	epilepsy
+dobutamine	tetralogy of fallot
+nitric oxide	acute myocardial infarction
+etoposide	ewing sarcoma
+isoniazid	pulmonary tuberculosis
+paclitaxel	squamous cell carcinoma
+carmustine	multiple myeloma
+cytarabine	multiple myeloma
+furosemide	congestive heart failure/heart failure
+vidarabine	non-hodgkin lymphoma
+methotrexate	aplastic anemia
+tacrolimus	aplastic anemia
+alemtuzumab	aplastic anemia
+tacrolimus	multiple myeloma
+alemtuzumab	multiple myeloma
+latanoprost	glaucoma
+timolol	glaucoma
+warfarin	atrial fibrillation
+biotin	atrial fibrillation
+imatinib	pulmonary arterial hypertension
+quetiapine	anorexia nervosa
+clenbuterol	congestive heart failure/heart failure
+verapamil	atrial fibrillation
+verapamil	congestive heart failure/heart failure
+arsenic trioxide	multiple myeloma
+ascorbic acid	multiple myeloma
+thiotepa	chronic myelogenous leukemia
+omeprazole	gastric ulcer
+misoprostol	gastric ulcer
+naproxen	gastric ulcer
+aceclofenac	gastric ulcer
+phenytoin/fosphenytoin	epilepsy
+deferasirox	iron overload
+deferasirox	neuroblastoma
+donepezil	alzheimer's disease
+allopurinol	hyperuricemia
+reboxetine	fibromyalgia
+iloprost	scleroderma
+etoposide	retinoblastoma
+ifosfamide	retinoblastoma
+albuterol	asthma
+albuterol	bronchospasm
+mifepristone	severe major depression with psychotic features
+memantine	multiple sclerosis
+octreotide	acromegaly
+citalopram	major depressive disorder
+dexetimide	major depressive disorder
+citalopram	insomnia
+dexetimide	insomnia
+eplerenone	atrial fibrillation
+lamivudine	diarrhea
+nelfinavir	diarrhea
+zidovudine	diarrhea
+calcium carbonate	diarrhea
+carboplatin	glioblastoma
+ezetimibe	atherosclerosis
+insulin glargine	obesity
+insulin detemir	obesity
+paromomycin	cutaneous leishmaniasis
+paroxetine	generalized anxiety disorder
+amoxicillin	parkinson's disease
+omeprazole	parkinson's disease
+bevacizumab	myelofibrosis/primary myelofibrosis
+busulfan	mucopolysaccharidosis vi
+alemtuzumab	mucopolysaccharidosis vi
+cyclophosphamide	mucopolysaccharidosis vi
+busulfan	wolman disease
+alemtuzumab	wolman disease
+cyclophosphamide	wolman disease
+busulfan	niemann-pick disease, type c
+alemtuzumab	niemann-pick disease, type c
+cyclophosphamide	niemann-pick disease, type c
+atorvastatin	obstructive sleep apnea
+vidarabine	neuroblastoma
+natalizumab	multiple myeloma
+galantamine	alzheimer's disease
+azithromycin	cutaneous leishmaniasis
+dronabinol	multiple sclerosis
+lenalidomide	pain
+vidarabine	systemic lupus erythematosus
+busulfan	systemic lupus erythematosus
+alemtuzumab	systemic lupus erythematosus
+vidarabine	scleroderma
+busulfan	scleroderma
+alemtuzumab	scleroderma
+pramipexole	fibromyalgia
+pioglitazone	amyotrophic lateral sclerosis
+zonisamide	epilepsy
+dronedarone	congestive heart failure/heart failure
+pregabalin	fibromyalgia
+desvenlafaxine	fibromyalgia
+budesonide	asthma
+cyclophosphamide	neuroblastoma
+pentostatin	hodgkin lymphoma
+alemtuzumab	hodgkin lymphoma
+pentostatin	multiple myeloma
+exenatide	diabetes mellitus
+metformin	diabetes mellitus
+bisoprolol	congestive heart failure/heart failure
+bevacizumab	retinopathy of prematurity
+clofarabine	chronic myelomonocytic leukemia
+estradiol	hidradenitis suppurativa
+ethinyl estradiol	hidradenitis suppurativa
+ceftibuten	pyelonephritis
+mifepristone	depression
+omeprazole	gastroesophageal reflux disease
+fingolimod	primary progressive multiple sclerosis
+zonisamide	schizophrenia
+olanzapine	schizoaffective disorder
+zonisamide	schizoaffective disorder
+gabapentin	pain
+irinotecan	glioblastoma
+bevacizumab	glioblastoma
+ramipril	atrial fibrillation
+abatacept	sarcoidosis
+metronidazole	bacterial vaginosis
+ursodiol	biliary cirrhosis
+budesonide	biliary cirrhosis
+etoricoxib	pain
+buspirone	congestive heart failure/heart failure
+acetazolamide	congestive heart failure/heart failure
+indomethacin	patent ductus arteriosus
+fluoxetine	obsessive-compulsive disorder
+naltrexone	obsessive-compulsive disorder
+domperidone	gastroparesis
+dobutamine	asthma
+venlafaxine	major depressive disorder
+travoprost	glaucoma
+travoprost	ocular hypertension
+buprenorphine	opioid-related disorders/opiate dependence
+etoposide	burkitt lymphoma
+everolimus	burkitt lymphoma
+sirolimus	burkitt lymphoma
+cytarabine	burkitt lymphoma
+interferon beta-1a	multiple sclerosis
+pioglitazone	asthma
+pioglitazone	obesity
+dasatinib	non-small cell lung carcinoma
+hydrocortisone	open-angle glaucoma/primary open angle glaucoma
+hydrocortisone	ocular hypertension
+bevacizumab	non-hodgkin lymphoma
+warfarin	multiple myeloma
+aspirin	multiple myeloma
+bendamustine	chronic myelogenous leukemia
+milnacipran	fibromyalgia
+levomilnacipran	fibromyalgia
+methylprednisolone	crohn disease
+prednisolone	crohn disease
+infliximab	crohn disease
+rituximab	thrombotic thrombocytopenic purpura
+cimetidine	generalized anxiety disorder
+phenytoin/fosphenytoin	neuroblastoma
+alemtuzumab	neuroblastoma
+ropivacaine	pain
+hydrocortisone	inflammatory bowel disease
+budesonide	inflammatory bowel disease
+hydrocortisone	ulcerative colitis
+budesonide	ulcerative colitis
+anidulafungin	candidiasis
+everolimus	neuroblastoma
+irinotecan	neuroblastoma
+sirolimus	neuroblastoma
+topotecan	neuroblastoma
+cisplatin	neuroblastoma
+doxorubicin	neuroblastoma
+ifosfamide	non-hodgkin lymphoma
+carboplatin	non-hodgkin lymphoma
+naproxen	arthritis
+celecoxib	arthritis
+metformin	generalized anxiety disorder
+rosiglitazone	malaria
+rosuvastatin	malaria
+eptifibatide	myocardial infarction
+bosentan	asthma
+micafungin	candidiasis
+amphotericin b	candidiasis
+deoxycholic acid	candidiasis
+clopidogrel	cerebral infarction
+aspirin	cerebral infarction
+estradiol	postmenopausal atrophic vaginitis
+fenofibrate	obesity
+riluzole	amyotrophic lateral sclerosis
+lithium	amyotrophic lateral sclerosis
+sirolimus	non-small cell lung carcinoma
+sildenafil	congestive heart failure/heart failure
+amphotericin b	visceral leishmaniasis
+methotrexate	psoriasis
+infliximab	psoriasis
+sevelamer	hyperphosphatemia
+asparaginase	multiple myeloma
+salicylic acid	obesity
+potassium salicylate	obesity
+lansoprazole	type 1 diabetes mellitus
+sitagliptin	type 1 diabetes mellitus
+dexlansoprazole	type 1 diabetes mellitus
+colchicine	hepatitis c, chronic/chronic hepatitis c virus infection
+clofarabine	myelofibrosis/primary myelofibrosis
+cyclophosphamide	myelofibrosis/primary myelofibrosis
+cyclophosphamide	chronic myelomonocytic leukemia
+memantine	alzheimer's disease
+prednisone	multiple myeloma
+quetiapine	schizoaffective disorder
+buspirone	schizoaffective disorder
+darbepoetin alfa	non-small cell lung carcinoma
+lenograstim	non-small cell lung carcinoma
+ethanol	alcohol abuse
+levetiracetam	alcohol abuse
+topiramate	alcohol abuse
+zonisamide	alcohol abuse
+aceclofenac	osteoarthritis
+quetiapine	major depressive disorder
+quetiapine	generalized anxiety disorder
+donepezil	dementia
+betaine	hepatitis c, chronic/chronic hepatitis c virus infection
+octreotide	carcinoid syndrome
+thalidomide	uveitis
+ondansetron	alcohol abuse
+abciximab	acute myocardial infarction
+palonosetron	nausea and vomiting
+aprepitant	nausea and vomiting
+cisplatin	nausea and vomiting
+dexamethasone	nausea and vomiting
+dasatinib	chronic myelogenous leukemia
+certolizumab pegol	crohn disease
+azacitidine	non-small cell lung carcinoma
+panobinostat	non-small cell lung carcinoma
+timolol	ocular hypertension
+bevacizumab	metastatic renal cell cancer
+pyridoxine	tardive dyskinesia
+pyridoxal phosphate	tardive dyskinesia
+sunitinib	glioblastoma
+bortezomib	medullary thyroid carcinoma
+cyclophosphamide	melanoma
+bosentan	sarcoidosis
+pioglitazone	hepatitis c, chronic/chronic hepatitis c virus infection
+midazolam	schizophrenia
+methadone	nausea and vomiting
+fulvestrant	non-small cell lung carcinoma
+anastrozole	non-small cell lung carcinoma
+vincristine	peripheral t-cell lymphoma
+dexrazoxane	peripheral t-cell lymphoma
+doxorubicin	peripheral t-cell lymphoma
+azacitidine	renal cell carcinoma
+miconazole	respiratory tract infections
+anidulafungin	respiratory tract infections
+midazolam	pain
+midazolam	anxiety
+ciprofloxacin	acute swimmer's ear/acute swimmers' ear
+dexamethasone	acute swimmer's ear/acute swimmers' ear
+erlotinib	neuroblastoma
+danazol	thrombotic thrombocytopenic purpura
+testosterone	congestive heart failure/heart failure
+methyltestosterone	congestive heart failure/heart failure
+ifosfamide	neuroblastoma
+temozolomide	neuroblastoma
+vincristine	neuroblastoma
+cholecalciferol	osteoporosis
+calcium carbonate	osteoporosis
+brimonidine	open-angle glaucoma/primary open angle glaucoma
+brimonidine	ocular hypertension
+vidarabine	multiple myeloma
+doxycycline	anthrax
+sitagliptin	cystic fibrosis
+sirolimus	multiple myeloma
+lenalidomide	renal cell carcinoma
+rosuvastatin	acute lung injury
+oseltamivir	influenza
+zanamivir	influenza
+tapentadol	osteoarthritis
+tramadol	premature ejaculation
+cyclophosphamide	glioblastoma
+metoprolol	obesity
+magnesium sulfate	pain
+vardenafil	cystic fibrosis
+aminosalicylic acid	ulcerative colitis
+erlotinib	squamous cell carcinoma
+everolimus	squamous cell carcinoma
+sirolimus	squamous cell carcinoma
+sufentanil	pain
+arsenic trioxide	essential thrombocythemia
+ascorbic acid	essential thrombocythemia
+arsenic trioxide	polycythemia vera
+ascorbic acid	polycythemia vera
+naloxone	constipation
+oxycodone	constipation
+naloxone	pain
+oxycodone	pain
+donepezil	parkinson's disease
+cyclophosphamide	non-small cell lung carcinoma
+lenograstim	lymphoma
+lenalidomide	mantle cell lymphoma
+lenalidomide	non-hodgkin lymphoma
+bevacizumab	age-related macular degeneration
+ranibizumab	age-related macular degeneration
+racepinephrine	asthma
+hydroxychloroquine	non-small cell lung carcinoma
+thalidomide	endometriosis
+panobinostat	non-hodgkin lymphoma
+acetylcysteine	bulimia nervosa
+lenalidomide	peripheral t-cell lymphoma
+warfarin	pulmonary arterial hypertension
+suramin	non-small cell lung carcinoma
+erlotinib	polycythemia vera
+mycophenolic acid	waldenstrom macroglobulinemia
+tacrolimus	waldenstrom macroglobulinemia
+busulfan	waldenstrom macroglobulinemia
+bupropion	depression
+cholecalciferol	crohn disease
+metformin	type ii diabetes mellitus/type 2 diabetes mellitus
+insulin glargine	type ii diabetes mellitus/type 2 diabetes mellitus
+simvastatin	pneumonia
+natalizumab	relapsing-remitting multiple sclerosis
+interferon beta-1a	relapsing-remitting multiple sclerosis
+basiliximab	ulcerative colitis
+everolimus	non-small cell lung carcinoma
+lorazepam	pain
+sildenafil	persistent fetal circulation syndrome/alveolar capillary dysplasia
+moxifloxacin	infectious otitis media
+dexmedetomidine	pulmonary arterial hypertension
+physostigmine	alzheimer's disease
+minocycline	multiple sclerosis
+propranolol	hemangioma
+epoprostenol	pulmonary arterial hypertension
+levofloxacin	community acquired pneumonia/community-acquired pneumonia
+ofloxacin	community acquired pneumonia/community-acquired pneumonia
+etoricoxib	postherpetic neuralgia
+voriconazole	candidiasis
+mercaptopurine	crohn disease
+triamcinolone hexacetonide	uveitis
+bevacizumab	uveitis
+sorafenib	metastatic renal cell cancer
+bortezomib	metastatic renal cell cancer
+hydroxyurea	multiple sclerosis
+ketoconazole	tinea pedis
+meropenem	abdominal abscess
+amoxicillin	abdominal abscess
+doripenem	abdominal abscess
+clavulanic acid	abdominal abscess
+meropenem	appendicitis
+amoxicillin	appendicitis
+doripenem	appendicitis
+clavulanic acid	appendicitis
+meropenem	peritonitis
+amoxicillin	peritonitis
+doripenem	peritonitis
+clavulanic acid	peritonitis
+erlotinib	glioblastoma
+vorinostat	glioblastoma
+bortezomib	mantle cell lymphoma
+erlotinib	renal cell carcinoma
+vorinostat	peripheral t-cell lymphoma
+benzoyl peroxide	gastroparesis
+naltrexone	gastroparesis
+isotretinoin	rosacea
+minocycline	rosacea
+hydroxychloroquine	renal cell carcinoma
+duloxetine	major depressive disorder
+timolol	hemangioma
+dronedarone	atrial fibrillation
+lidocaine	pain
+deferasirox	chronic eosinophilic leukemia
+deferasirox	chronic myelomonocytic leukemia
+zoledronic acid	osteoporosis
+zoledronic acid	multiple sclerosis
+sildenafil	duchenne muscular dystrophy
+varenicline	alcohol abuse
+varenicline	tobacco use disorder/nicotine dependence
+cholecalciferol	diabetes mellitus
+olsalazine	proctitis
+fluconazole	candidemia
+anidulafungin	candidemia
+bendamustine	multiple myeloma
+methylprednisolone	multiple myeloma
+prednisolone	multiple myeloma
+arsenic trioxide	endometrial carcinoma
+atorvastatin	acute coronary syndrome
+valproic acid	neuroblastoma
+rituximab	multiple sclerosis
+everolimus	transitional cell carcinoma
+paclitaxel	transitional cell carcinoma
+sirolimus	transitional cell carcinoma
+cisplatin	transitional cell carcinoma
+leucovorin	rheumatoid arthritis
+alefacept	chronic graft versus host disease
+baclofen	tobacco use disorder/nicotine dependence
+niacinamide	obesity
+niacin	obesity
+propranolol	post-traumatic stress disorder
+tadalafil	pulmonary arterial hypertension
+exenatide	alzheimer's disease
+lapatinib	melanoma
+alefacept	aplastic anemia
+ondansetron	obsessive-compulsive disorder
+dexamethasone	crohn disease
+cinacalcet	hyperparathyroidism
+cinacalcet	secondary hyperparathyroidism
+thalidomide	rheumatoid arthritis
+primaquine	malaria
+chloroquine	malaria
+denosumab	rheumatoid arthritis
+denosumab	osteoporosis
+etanercept	osteoporosis
+everolimus	multiple myeloma
+travoprost	open-angle glaucoma/primary open angle glaucoma
+irinotecan	ewing sarcoma
+temozolomide	ewing sarcoma
+everolimus	pemphigus
+sirolimus	pemphigus
+midazolam	epilepsy
+dexamethasone	sjogren syndrome
+gatifloxacin	bacterial conjunctivitis
+metformin	squamous cell carcinoma
+vigabatrin	alcohol abuse
+cocaine	alcohol abuse
+minocycline	cystic fibrosis
+tetracycline	cystic fibrosis
+rifampin	cystic fibrosis
+sulfamethoxazole	cystic fibrosis
+trimethoprim	cystic fibrosis
+chlorhexidine	cystic fibrosis
+ranolazine	atrial fibrillation
+budesonide	proctitis
+melphalan	non-hodgkin lymphoma
+thiotepa	non-hodgkin lymphoma
+aminolevulinic acid	glioblastoma
+irinotecan	pancreatic adenocarcinoma
+capecitabine/fluorouracil	pancreatic adenocarcinoma
+oxaliplatin	pancreatic adenocarcinoma
+amifostine	trigeminal neuralgia
+prednisone	polymyalgia rheumatica
+doripenem	meningitis
+tadalafil	multiple myeloma
+clarithromycin	multiple myeloma
+bosentan	persistent fetal circulation syndrome/alveolar capillary dysplasia
+loratadine	rheumatoid arthritis
+acetaminophen	rheumatoid arthritis
+nicotine	tobacco use disorder/nicotine dependence
+pioglitazone	tobacco use disorder/nicotine dependence
+morphine	tobacco use disorder/nicotine dependence
+zoledronic acid	neuroblastoma
+galantamine	post-traumatic stress disorder
+methylphenidate	post-traumatic stress disorder
+docetaxel	leiomyosarcoma
+rituximab	peripheral t-cell lymphoma
+lenalidomide	waldenstrom macroglobulinemia
+aminopterin	peripheral t-cell lymphoma
+bimatoprost	glaucoma
+lisdexamfetamine	major depressive disorder
+chloroquine	multiple myeloma
+axitinib	metastatic renal cell cancer
+lumefantrine	malaria
+allopurinol	gout
+pentostatin	mantle cell lymphoma
+alprostadil	pulmonary arterial hypertension
+prednisone	diarrhea
+docetaxel	diarrhea
+milnacipran	irritable bowel syndrome
+levomilnacipran	irritable bowel syndrome
+pregabalin	neuralgia
+buspirone	anxiety disorder
+buspirone	epilepsy
+etoposide	aplastic anemia
+melphalan	aplastic anemia
+busulfan	aplastic anemia
+carmustine	aplastic anemia
+clofarabine	aplastic anemia
+cytarabine	aplastic anemia
+vorinostat	mantle cell lymphoma
+bexarotene	multiple myeloma
+ketamine	bipolar disorder
+axitinib	glioblastoma
+amoxicillin	infectious otitis media
+clavulanic acid	infectious otitis media
+liraglutide	type ii diabetes mellitus/type 2 diabetes mellitus
+testosterone	multiple sclerosis
+methyltestosterone	multiple sclerosis
+vemurafenib	melanoma
+daptomycin	meningitis
+mitoxantrone	pain
+mepivacaine	pain
+capecitabine/fluorouracil	actinic keratosis
+eptifibatide	pneumonia
+mycophenolic acid	non-hodgkin lymphoma
+tacrolimus	non-hodgkin lymphoma
+tamsulosin	benign prostatic hyperplasia
+imiquimod	melanoma
+temozolomide	melanoma
+ipilimumab	melanoma
+torsemide	congestive heart failure/heart failure
+thalidomide	scleroderma
+bupropion	tobacco use disorder/nicotine dependence
+isotretinoin	alzheimer's disease
+adalimumab	crohn disease
+ranibizumab	diabetic macular edema
+zonisamide	bipolar disorder
+amikacin	bacterial pneumonia
+linezolid	bacterial pneumonia
+meropenem	bacterial pneumonia
+tobramycin	bacterial pneumonia
+vancomycin	bacterial pneumonia
+ropivacaine	appendicitis
+bupivacaine	appendicitis
+dexamethasone	mantle cell lymphoma
+amitriptyline	migraine
+topiramate	migraine
+sunitinib	metastatic renal cell cancer
+lucanthone	glioblastoma
+ertapenem	endometritis
+aceclofenac	pulmonary embolism
+naltrexone	obesity
+bupropion	obesity
+prednisone	rheumatoid arthritis
+dipyridamole	rheumatoid arthritis
+menthol	pain
+mefloquine	malaria
+pramipexole	amyotrophic lateral sclerosis
+methylene blue	alzheimer's disease
+prazosin	tobacco use disorder/nicotine dependence
+hydroxyurea	polycythemia vera
+fingolimod	multiple sclerosis
+interferon beta-1b	multiple sclerosis
+axitinib	renal cell carcinoma
+loratadine	parkinson's disease
+simvastatin	bipolar disorder
+lapatinib	squamous cell carcinoma
+codeine	pain
+alemtuzumab	multiple sclerosis
+cyclophosphamide	multiple sclerosis
+cycloserine	panic disorder
+ketamine	anxiety
+riluzole	major depressive disorder
+sertraline	major depressive disorder
+folic acid	psoriasis
+pyridoxine	psoriasis
+pyridoxal phosphate	psoriasis
+hydroxocobalamin	psoriasis
+adalimumab	psoriasis
+enalapril	metastatic melanoma
+propranolol	metastatic melanoma
+bevacizumab	metastatic melanoma
+cholecalciferol	systemic lupus erythematosus
+tenofovir	hiv infection
+zidovudine	hiv infection
+lisdexamfetamine	schizophrenia
+acebutolol	hemangioma
+cinacalcet	osteomalacia
+methotrexate	lymphoid leukemia
+cyclophosphamide	lymphoid leukemia
+methotrexate	chronic myelogenous leukemia
+cyclophosphamide	chronic myelogenous leukemia
+methotrexate	chronic myelomonocytic leukemia
+ticagrelor	acute coronary syndrome
+ranolazine	acute coronary syndrome
+isradipine	bipolar disorder
+everolimus	metastatic renal cell cancer
+sirolimus	metastatic renal cell cancer
+cetuximab	squamous cell carcinoma
+daclizumab	multiple sclerosis
+lidocaine	bursitis
+betamethasone	bursitis
+ketamine	depression
+minocycline	depression
+papaverine	schizophrenia
+bemiparin/tinzaparin	thrombosis
+enoxaparin	thrombosis
+dronabinol	schizophrenia
+tacrolimus	vitiligo
+cycloserine	tobacco use disorder/nicotine dependence
+ibuprofen	pain
+caffeine	pain
+acetaminophen	pain
+temozolomide	retinoblastoma
+hydrocortisone	allergic conjunctivitis
+colistin	pneumonia
+gefitinib	non-small cell lung carcinoma
+lidocaine	periodontitis
+bupivacaine	periodontitis
+racepinephrine	periodontitis
+capsaicin	postherpetic neuralgia
+ranolazine	congestive heart failure/heart failure
+tocophersolan	nosocomial pneumonia
+ascorbic acid	nosocomial pneumonia
+ciprofloxacin	infectious otitis media
+dexamethasone	infectious otitis media
+ciprofloxacin	otitis externa
+dexamethasone	otitis externa
+tadalafil	congestive heart failure/heart failure
+amitriptyline	pain
+estradiol	osteoporosis
+lithium	depression
+metoclopramide	gastroparesis
+linagliptin	schizophrenia
+hydroxychloroquine	systemic lupus erythematosus
+chloroquine	systemic lupus erythematosus
+fluconazole	cutaneous leishmaniasis
+ketamine	major depressive disorder
+fenofibrate	multiple myeloma
+dexamethasone	postoperative nausea and vomiting
+simvastatin	alzheimer's disease
+cetirizine	migraine
+omeprazole	cystic fibrosis
+metformin	non-small cell lung carcinoma
+ceftriaxone	gonorrhea
+everolimus	insulinoma
+sirolimus	insulinoma
+acitretin	melanoma
+baclofen	alcohol withdrawal
+paclitaxel	merkel cell carcinoma
+finasteride	non-small cell lung carcinoma
+glycerin/glycerol	infectious otitis media
+omacetaxine mepesuccinate	chronic myelogenous leukemia
+bevacizumab	multiple myeloma
+theophylline	non-small cell lung carcinoma
+cholecalciferol	multiple sclerosis
+bortezomib	myasthenia gravis
+bortezomib	systemic lupus erythematosus
+bortezomib	rheumatoid arthritis
+carvedilol	pulmonary arterial hypertension
+imatinib	non-small cell lung carcinoma
+lorazepam	epilepsy
+clobazam	epilepsy
+clonazepam	epilepsy
+amitriptyline	insomnia
+zolpidem	insomnia
+sotalol	atrial fibrillation
+scopolamine	motion sickness
+sildenafil	parkinson's disease
+linezolid	osteomyelitis
+meropenem	osteomyelitis
+metronidazole	osteomyelitis
+moxifloxacin	osteomyelitis
+piperacillin	osteomyelitis
+sulfamethoxazole	osteomyelitis
+tazobactam	osteomyelitis
+trimethoprim	osteomyelitis
+aztreonam	osteomyelitis
+vancomycin	osteomyelitis
+cefepime	osteomyelitis
+ciprofloxacin	osteomyelitis
+clindamycin phosphate	osteomyelitis
+daptomycin	osteomyelitis
+bendamustine	waldenstrom macroglobulinemia
+methylprednisolone	cystic fibrosis
+prednisolone	cystic fibrosis
+levodopa	glioblastoma
+colchicine	atrial fibrillation
+fenoterol	asthma
+octreotide	neuroendocrine neoplasm
+octreotide	neuroblastoma
+ipratropium	asthma
+triamcinolone hexacetonide	vitiligo
+ketamine	obsessive-compulsive disorder
+midazolam	obsessive-compulsive disorder
+liraglutide	diabetes mellitus
+galantamine	schizophrenia
+galantamine	schizoaffective disorder
+memantine	schizoaffective disorder
+rifaximin	crohn disease
+ketorolac	tenosynovitis
+dexamethasone	tenosynovitis
+loperamide	ulcerative colitis
+loperamide	short bowel syndrome
+ketorolac	pain
+diazepam	epilepsy
+bevacizumab	wet macular degeneration
+racepinephrine	pain
+bupivacaine	peripheral vascular disease
+fluoxetine	dementia
+flupentixol/flupenthixol	dementia
+fluphenazine	dementia
+flurazepam	dementia
+fluspirilene	dementia
+fluvoxamine	dementia
+gabapentin	dementia
+galantamine	dementia
+haloperidol	dementia
+alprazolam	dementia
+hydroxyzine	dementia
+imipramine	dementia
+lamotrigine	dementia
+levetiracetam	dementia
+lorazepam	dementia
+maprotiline	dementia
+memantine	dementia
+methotrimeprazine	dementia
+amisulpride	dementia
+mianserin	dementia
+amitriptyline	dementia
+midazolam	dementia
+mirtazapine	dementia
+moclobemide	dementia
+nicergoline	dementia
+nitrazepam	dementia
+nortriptyline	dementia
+olanzapine	dementia
+opipramol	dementia
+oxazepam	dementia
+oxcarbazepine	dementia
+paroxetine	dementia
+perazine	dementia
+perphenazine	dementia
+phenobarbital	dementia
+phenytoin/fosphenytoin	dementia
+pimozide	dementia
+pregabalin	dementia
+promethazine	dementia
+reboxetine	dementia
+rivastigmine	dementia
+aripiprazole	dementia
+sertraline	dementia
+sulpiride	dementia
+temazepam	dementia
+thioridazine	dementia
+topiramate	dementia
+tranylcypromine	dementia
+trazodone	dementia
+triazolam	dementia
+trimipramine	dementia
+venlafaxine	dementia
+zolpidem	dementia
+benperidol	dementia
+biperiden	dementia
+acamprosate	dementia
+bromazepam	dementia
+lacosamide	dementia
+bupropion	dementia
+zuclopenthixol	dementia
+paliperidone	dementia
+carbamazepine	dementia
+chloral hydrate	dementia
+chlorprothixene	dementia
+citalopram	dementia
+clobazam	dementia
+clomipramine	dementia
+clonazepam	dementia
+clozapine	dementia
+diazepam	dementia
+diphenhydramine	dementia
+doxepin	dementia
+duloxetine	dementia
+fluoxetine	schizophrenia
+flupentixol/flupenthixol	schizophrenia
+fluphenazine	schizophrenia
+flurazepam	schizophrenia
+fluspirilene	schizophrenia
+fluvoxamine	schizophrenia
+gabapentin	schizophrenia
+haloperidol	schizophrenia
+alprazolam	schizophrenia
+hydroxyzine	schizophrenia
+imipramine	schizophrenia
+lamotrigine	schizophrenia
+levetiracetam	schizophrenia
+maprotiline	schizophrenia
+methotrimeprazine	schizophrenia
+amisulpride	schizophrenia
+mianserin	schizophrenia
+amitriptyline	schizophrenia
+mirtazapine	schizophrenia
+moclobemide	schizophrenia
+nicergoline	schizophrenia
+nitrazepam	schizophrenia
+nortriptyline	schizophrenia
+opipramol	schizophrenia
+oxazepam	schizophrenia
+oxcarbazepine	schizophrenia
+paroxetine	schizophrenia
+perazine	schizophrenia
+perphenazine	schizophrenia
+phenobarbital	schizophrenia
+phenytoin/fosphenytoin	schizophrenia
+pimozide	schizophrenia
+pregabalin	schizophrenia
+promethazine	schizophrenia
+reboxetine	schizophrenia
+rivastigmine	schizophrenia
+sertraline	schizophrenia
+sulpiride	schizophrenia
+temazepam	schizophrenia
+thioridazine	schizophrenia
+topiramate	schizophrenia
+tranylcypromine	schizophrenia
+trazodone	schizophrenia
+triazolam	schizophrenia
+trimipramine	schizophrenia
+valproic acid	schizophrenia
+venlafaxine	schizophrenia
+zolpidem	schizophrenia
+benperidol	schizophrenia
+biperiden	schizophrenia
+acamprosate	schizophrenia
+bromazepam	schizophrenia
+lacosamide	schizophrenia
+bupropion	schizophrenia
+zuclopenthixol	schizophrenia
+paliperidone	schizophrenia
+carbamazepine	schizophrenia
+chloral hydrate	schizophrenia
+chlorprothixene	schizophrenia
+citalopram	schizophrenia
+clobazam	schizophrenia
+clomipramine	schizophrenia
+clonazepam	schizophrenia
+diazepam	schizophrenia
+diphenhydramine	schizophrenia
+doxepin	schizophrenia
+duloxetine	schizophrenia
+rifaximin	bacterial vaginosis
+methylprednisolone	neuromyelitis optica
+prednisolone	neuromyelitis optica
+dexamethasone	non-small cell lung carcinoma
+calcitriol	localized scleroderma
+valacyclovir	herpes zoster
+valacyclovir	postherpetic neuralgia
+flucytosine	glioblastoma
+lomustine	glioblastoma
+liraglutide	obesity
+hydrocortisone	lymphoid leukemia
+mercaptopurine	lymphoid leukemia
+mitoxantrone	lymphoid leukemia
+bortezomib	lymphoid leukemia
+vorinostat	lymphoid leukemia
+asparaginase	lymphoid leukemia
+cytarabine	lymphoid leukemia
+dexamethasone	lymphoid leukemia
+doxorubicin	lymphoid leukemia
+guanabenz	multiple sclerosis
+dimethyl fumarate	multiple sclerosis
+sorafenib	hepatocellular carcinoma
+paliperidone	schizoaffective disorder
+nivolumab	non-small cell lung carcinoma
+prednisone	temporal arteritis
+lubiprostone	irritable bowel syndrome
+denosumab	anorexia nervosa
+flucytosine	non-small cell lung carcinoma
+bendamustine	diffuse large b-cell lymphoma refractory/refractory diffuse large b-cell lymphoma
+rituximab	diffuse large b-cell lymphoma refractory/refractory diffuse large b-cell lymphoma
+amlodipine	hyperlipidemia
+rosuvastatin	hyperlipidemia
+telmisartan	hyperlipidemia
+bisacodyl	constipation
+bisacodyl	multiple sclerosis
+methylprednisolone	pemphigus
+prednisolone	pemphigus
+prednisone	pemphigus
+acetaminophen	pemphigus
+cetirizine	pemphigus
+ondansetron	schizophrenia
+ketamine	pancreatitis
+propofol	pancreatitis
+ketamine	cholangitis
+propofol	cholangitis
+colesevelam	multiple myeloma
+glycerin/glycerol	trigeminal neuralgia
+tolcapone	neuroblastoma
+oxaliplatin	neuroblastoma
+quinine	rhinitis
+quinine	sinusitis
+midazolam	major depressive disorder
+bevacizumab	gestational trophoblastic disease
+bimatoprost	alopecia
+varenicline	obesity
+levobupivacaine	pain
+everolimus	myelofibrosis/primary myelofibrosis
+mycophenolic acid	myelofibrosis/primary myelofibrosis
+sirolimus	myelofibrosis/primary myelofibrosis
+ibandronic acid	multiple myeloma
+nitric oxide	bipolar disorder
+ascorbic acid	atrial fibrillation
+perindopril	obesity
+latanoprost	ocular hypertension
+topiramate	prader-willi syndrome
+phenprocoumon	thrombosis
+lansoprazole	erosive esophagitis
+dexlansoprazole	erosive esophagitis
+tacrolimus	mantle cell lymphoma
+tacrolimus	myelofibrosis/primary myelofibrosis
+bortezomib	myelofibrosis/primary myelofibrosis
+metformin	atrial fibrillation
+methylprednisolone	opioid-related disorders/opiate dependence
+prednisolone	opioid-related disorders/opiate dependence
+morphine	opioid-related disorders/opiate dependence
+tacrolimus	ulcerative colitis
+mycophenolic acid	diarrhea
+fluconazole	cryptococcosis
+sertraline	cryptococcosis
+caffeine	migraine
+nivolumab	multiple myeloma
+abatacept	myasthenia gravis
+teicoplanin	osteomyelitis
+verapamil	sinusitis
+vancomycin	clostridium difficile infection/clostridium infections
+aminolevulinic acid	actinic keratosis
+naltrexone	schizophrenia
+estradiol	anorexia nervosa
+ethinyl estradiol	anorexia nervosa
+losartan	cystic fibrosis
+mifepristone	tobacco use disorder/nicotine dependence
+amphotericin b	invasive pulmonary aspergillosis
+voriconazole	invasive pulmonary aspergillosis
+oxymetazoline	common cold
+phenylephrine	common cold
+estradiol	endometriosis
+norethindrone	endometriosis
+vorinostat	leiomyosarcoma
+acetaminophen	patent ductus arteriosus
+ertapenem	pneumonia
+modafinil	major depressive disorder
+methotrexate	juvenile rheumatoid arthritis
