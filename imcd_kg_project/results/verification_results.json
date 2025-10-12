@@ -1,0 +1,79 @@
+{
+  "test_1": {
+    "status": "PASS",
+    "leakage": false
+  },
+  "test_2": {
+    "status": "PASS",
+    "diff_01": 0.3665672540664673,
+    "diff_12": 0.4057842791080475
+  },
+  "test_4": {
+    "status": "PASS",
+    "correlation": -0.1245324230530399
+  },
+  "test_5": {
+    "status": "PASS",
+    "ranks": [
+      474,
+      1393,
+      1050
+    ],
+    "similarities": [
+      0.9174657464027405,
+      0.9336068630218506,
+      0.9361395835876465
+    ],
+    "rank_variance": 143776.22222222222
+  },
+  "test_6": {
+    "status": "PASS",
+    "adalimumab_in_top_10": true,
+    "top_10": [
+      [
+        "CHEMBL.COMPOUND:CHEMBL1201580",
+        0.9948732256889343
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL2108483",
+        0.9820384979248047
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL1589",
+        0.9661601185798645
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL1093423",
+        0.9651777744293213
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL1650443",
+        0.9651777744293213
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL1929387",
+        0.9651777744293213
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL2105711",
+        0.9651777744293213
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL1201835",
+        0.9644480347633362
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL17",
+        0.9632633924484253
+      ],
+      [
+        "CHEMBL.COMPOUND:CHEMBL1201496",
+        0.9606124758720398
+      ]
+    ]
+  },
+  "test_7": {
+    "status": "PASS",
+    "random_rank": 354
+  }
+}

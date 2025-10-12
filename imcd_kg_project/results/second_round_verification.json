@@ -1,0 +1,84 @@
+{
+  "test_1": {
+    "status": "PASS",
+    "feature_values": [
+      0.0,
+      1.0,
+      2.0,
+      3.0,
+      4.94,
+      6.0,
+      8.0,
+      10.0
+    ],
+    "ranks": [
+      547,
+      13,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "scores": [
+      0.8987678289413452,
+      0.9651697874069214,
+      0.9769266247749329,
+      0.974777102470398,
+      0.9862365126609802,
+      0.9895668625831604,
+      0.9950646758079529,
+      0.9945567846298218
+    ],
+    "monotonic_fraction": 1.0
+  },
+  "test_2": {
+    "status": "PASS",
+    "adalimumab_rank": 472,
+    "wrong_drug_rank": 2024
+  },
+  "test_4": {
+    "status": "PASS",
+    "ranks": {
+      "CHEMBL.COMPOUND:CHEMBL10": 3084,
+      "CHEMBL.COMPOUND:CHEMBL10009": 3791,
+      "CHEMBL.COMPOUND:CHEMBL100259": 3859
+    }
+  },
+  "test_5": {
+    "status": "PASS",
+    "epoch_counts": [
+      50,
+      100,
+      200,
+      300
+    ],
+    "ranks": [
+      1,
+      1,
+      1,
+      2
+    ]
+  },
+  "test_6": {
+    "status": "PASS",
+    "full_model_rank": 1,
+    "no_experimental_rank": 520,
+    "rank_drop": 519
+  },
+  "test_7": {
+    "status": "PASS",
+    "bootstrap_ranks": [
+      4,
+      1,
+      1,
+      1,
+      1
+    ],
+    "mean": 1.6,
+    "std": 1.2000000000000002,
+    "ci_lower": -0.7520000000000002,
+    "ci_upper": 3.9520000000000004
+  }
+}
