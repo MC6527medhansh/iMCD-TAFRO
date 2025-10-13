@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 RTX-KG2 Knowledge Graph Loader
 Architecture: Stream-process large files, filter relevant subgraph
