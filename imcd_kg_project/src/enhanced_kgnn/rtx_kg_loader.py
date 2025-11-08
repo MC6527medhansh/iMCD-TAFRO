@@ -141,6 +141,148 @@ class RTXKGLoader:
                             })
         
         return entity_relationships
+    
+    def load_full_graph(self, entity_types_filter=None):
+        """
+        Load full RTX-KG2 graph into NetworkX
+        
+        Args:
+            entity_types_filter: List of prefixes to filter (e.g., ['CHEMBL.COMPOUND', 'MONDO'])
+                                If None, loads all entities
+        
+        Returns:
+            NetworkX DiGraph with nodes and edges
+        """
+        import networkx as nx
+        
+        logger.info("Loading full RTX-KG2 graph...")
+        G = nx.DiGraph()
+        
+        # Load nodes
+        logger.info(f"Loading nodes from {self.nodes_file}...")
+        node_count = 0
+        with open(self.nodes_file, 'r') as f:
+            for line_num, line in enumerate(f):
+                if line_num == 0:  # Skip header
+                    continue
+                
+                parts = line.strip().split('\t')
+                if len(parts) < 3:
+                    continue
+                
+                node_id, name, category = parts[0], parts[1], parts[2]
+                
+                # Filter by entity type if specified
+                if entity_types_filter:
+                    if not any(node_id.startswith(prefix) for prefix in entity_types_filter):
+                        continue
+                
+                G.add_node(node_id, name=name, category=category)
+                node_count += 1
+                
+                if node_count % 100000 == 0:
+                    logger.info(f"  Loaded {node_count:,} nodes...")
+        
+        logger.info(f"✓ Loaded {node_count:,} nodes")
+        
+        # Load edges
+        logger.info(f"Loading edges from {self.edges_file}...")
+        edge_count = 0
+        with open(self.edges_file, 'r') as f:
+            for line_num, line in enumerate(f):
+                if line_num == 0:  # Skip header
+                    continue
+                
+                parts = line.strip().split('\t')
+                if len(parts) < 3:
+                    continue
+                
+                subject, obj, predicate = parts[0], parts[1], parts[2]
+                
+                # Only add edge if both nodes exist in graph
+                if G.has_node(subject) and G.has_node(obj):
+                    G.add_edge(subject, obj, predicate=predicate)
+                    edge_count += 1
+                    
+                    if edge_count % 100000 == 0:
+                        logger.info(f"  Loaded {edge_count:,} edges...")
+        
+        logger.info(f"✓ Loaded {edge_count:,} edges")
+        logger.info(f"✓ Graph: {G.number_of_nodes():,} nodes, {G.number_of_edges():,} edges")
+        
+        return G
+    
+    def validate_critical_entities(self, graph, adalimumab_id, castleman_id, tnf_id):
+        """
+        Validate that critical entities and paths exist in loaded graph
+        
+        Returns:
+            Dict with validation results
+        """
+        import networkx as nx
+        
+        logger.info("Validating critical entities and paths...")
+        
+        results = {
+            'adalimumab_exists': graph.has_node(adalimumab_id),
+            'castleman_exists': graph.has_node(castleman_id),
+            'tnf_exists': graph.has_node(tnf_id),
+            'ada_tnf_path': False,
+            'tnf_castleman_path': False,
+            'complete_pathway': False
+        }
+        
+        # Check direct connections
+        results['ada_tnf_direct'] = graph.has_edge(adalimumab_id, tnf_id) or \
+                                     graph.has_edge(tnf_id, adalimumab_id)
+        results['tnf_castleman_direct'] = graph.has_edge(tnf_id, castleman_id) or \
+                                           graph.has_edge(castleman_id, tnf_id)
+        
+        # Check paths (up to 3 hops)
+        if results['adalimumab_exists'] and results['tnf_exists']:
+            try:
+                path = nx.shortest_path(graph.to_undirected(), adalimumab_id, tnf_id)
+                results['ada_tnf_path'] = len(path) <= 4  # 3 hops max
+                results['ada_tnf_path_length'] = len(path) - 1
+                logger.info(f"  Adalimumab → TNF: {len(path)-1} hops")
+            except nx.NetworkXNoPath:
+                logger.warning("  No path found: Adalimumab → TNF")
+        
+        if results['tnf_exists'] and results['castleman_exists']:
+            try:
+                path = nx.shortest_path(graph.to_undirected(), tnf_id, castleman_id)
+                results['tnf_castleman_path'] = len(path) <= 4  # 3 hops max
+                results['tnf_castleman_path_length'] = len(path) - 1
+                logger.info(f"  TNF → Castleman: {len(path)-1} hops")
+            except nx.NetworkXNoPath:
+                logger.warning("  No path found: TNF → Castleman")
+        
+        # Complete pathway check
+        results['complete_pathway'] = results['ada_tnf_path'] and results['tnf_castleman_path']
+        
+        return results
+    
+    def save_graph(self, graph, output_path):
+        """Save graph to pickle file"""
+        import pickle
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Saving graph to {output_path}...")
+        with open(output_path, 'wb') as f:
+            pickle.dump(graph, f, protocol=pickle.HIGHEST_PROTOCOL)
+        
+        size_gb = output_path.stat().st_size / 1e9
+        logger.info(f"✓ Graph saved ({size_gb:.2f} GB)")
+        
+    def load_saved_graph(self, graph_path):
+        """Load pre-computed graph from pickle"""
+        import pickle
+        logger.info(f"Loading saved graph from {graph_path}...")
+        with open(graph_path, 'rb') as f:
+            graph = pickle.load(f)
+        logger.info(f"✓ Loaded graph: {graph.number_of_nodes():,} nodes, {graph.number_of_edges():,} edges")
+        return graph
 
 
 def inspect_data_structure(kg_data_path: Path):
@@ -169,6 +311,8 @@ def inspect_data_structure(kg_data_path: Path):
                 print(f"Line {i}: {line.strip()}")
             else:
                 break
+            
+
 
 
 if __name__ == "__main__":

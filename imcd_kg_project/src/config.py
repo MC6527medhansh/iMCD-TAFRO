@@ -63,4 +63,26 @@ MODEL_CONFIG = {
     'num_epochs': 100
 }
 
+# Processed graph cache (Phase 1.2)
+PROCESSED_GRAPH_PATH = DATA_DIR / "processed" / "full_graph.pkl"
+
+# Disease test sets for validation (Phase 1.3)
+TNF_DISEASES = {
+    'MONDO:0015564': 'Castleman Disease (iMCD-TAFRO)',
+    'MONDO:0008383': 'Rheumatoid Arthritis',
+    'MONDO:0005011': 'Crohn Disease',
+    'MONDO:0005083': 'Psoriasis'
+}
+
+NON_TNF_DISEASES = {
+    'MONDO:0005148': 'Type 2 Diabetes',
+    'MONDO:0005044': 'Hypertension',
+    'MONDO:0011382': 'Alzheimer Disease'
+}
+
+# Critical entity IDs (centralized from various places)
+ADALIMUMAB_ID = "CHEMBL.COMPOUND:CHEMBL1201580"
+CASTLEMAN_ID = "MONDO:0015564"
+TNF_ID = "UniProtKB:P01375"
+
 print(f"✅ Config loaded. Project root: {PROJECT_ROOT}")
