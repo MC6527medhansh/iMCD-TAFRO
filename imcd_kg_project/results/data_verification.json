@@ -1,0 +1,50 @@
+{
+  "test_1": {
+    "status": "PASS",
+    "sizes": {
+      "nodes": 1.845718558,
+      "edges": 6.891462691,
+      "training_pos_1": 0.000244253,
+      "training_pos_2": 0.014793267,
+      "training_neg_1": 5.6331e-05,
+      "training_neg_2": 0.001020328
+    }
+  },
+  "test_2": {
+    "status": "PASS",
+    "gene_count": 43,
+    "gene_percentage": 0.043000430004300046,
+    "entity_counts": {
+      "drugs": 9165,
+      "diseases": 4,
+      "genes_proteins": 43,
+      "pathways": 0,
+      "other": 90787
+    }
+  },
+  "test_3": {
+    "status": "PASS",
+    "structure": "drug_disease_pairs"
+  },
+  "test_4": {
+    "status": "PASS",
+    "found": {
+      "TNF_protein": true,
+      "adalimumab": true,
+      "castleman": true
+    }
+  },
+  "test_5": {
+    "status": "WARNING",
+    "paths": {
+      "adalimumab_to_tnf": false,
+      "tnf_to_disease": true,
+      "tnf_total_edges": 13
+    }
+  },
+  "test_6": {
+    "status": "PASS",
+    "previous_genes": 0,
+    "current_genes": 43
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "test_1": {
+    "status": "PASS",
+    "nodes_size_gb": 1.845718558,
+    "edges_size_gb": 6.891462691
+  },
+  "test_2": {
+    "status": "WARNING",
+    "available_gb": 3.189096448,
+    "estimated_needed_gb": 34.948724996
+  },
+  "test_3": {
+    "status": "FAIL",
+    "reason": "tnf_not_found"
+  },
+  "test_4": {
+    "status": "PASS",
+    "tnf_id": "UniProtKB:P01375",
+    "total_edges": 100,
+    "drug_edges": 8,
+    "disease_edges": 6,
+    "predicates": {
+      "biolink:close_match": 13,
+      "biolink:has_participant": 42,
+      "biolink:capable_of": 2,
+      "biolink:expressed_in": 1,
+      "biolink:has_part": 1,
+      "biolink:subclass_of": 13,
+      "biolink:gene_product_of": 4,
+      "biolink:physically_interacts_with": 3,
+      "biolink:in_taxon": 3,
+      "biolink:related_to": 3,
+      "biolink:entity_positively_regulates_entity": 5,
+      "biolink:located_in": 5,
+      "biolink:treats": 1,
+      "biolink:produces": 1,
+      "biolink:entity_negatively_regulates_entity": 1,
+      "biolink:affects": 1,
+      "biolink:causes": 1
+    }
+  },
+  "test_5": {
+    "status": "PASS",
+    "direct_tnf_connections": 1,
+    "total_edges": 100
+  },
+  "test_6": {
+    "status": "PASS",
+    "tnf_connections": 0,
+    "gene_connections": 30,
+    "total_edges": 100
+  },
+  "test_7": {
+    "status": "PASS",
+    "entity_types": {
+      "UMLS": 3035,
+      "CHEBI": 71,
+      "MESH": 106,
+      "UBERON": 9,
+      "FMA": 50,
+      "MONDO": 3,
+      "NCIT": 1,
+      "NCBITaxon": 2,
+      "CHEMBL.COMPOUND": 4174,
+      "RXNORM": 1078,
+      "VANDF": 56,
+      "ATC": 495,
+      "DRUGBANK": 869,
+      "UniProtKB": 16,
+      "CHEMBL.TARGET": 34
+    },
+    "has_drugs": true,
+    "has_diseases": true,
+    "has_genes": true
+  }
+}

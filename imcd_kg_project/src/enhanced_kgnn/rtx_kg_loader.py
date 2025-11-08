@@ -172,31 +172,60 @@ def inspect_data_structure(kg_data_path: Path):
 
 
 if __name__ == "__main__":
-    kg_path = Path("../../data/kgml_data/bkg_rtxkg2c_v2.7.3")
+    """Phase 1.1: Entity Verification"""
+    import json
     
+    kg_path = Path("../../data/kgml_data/bkg_rtxkg2c_v2.7.3")
     loader = RTXKGLoader(kg_path)
     
-    # Search for our target entities
-    search_results = loader.search_entities([
-        'adalimumab',
-        'castleman',
-        'TNF'
-    ])
+    # Critical entities from PROJECT_CONTEXT.md
+    TARGET_ENTITIES = {
+        'adalimumab': 'CHEMBL.COMPOUND:CHEMBL1201580',
+        'castleman': 'MONDO:0015564',
+        'tnf_gene': 'UniProtKB:P01375'
+    }
     
-    # Get specific entity IDs
-    adalimumab_id = "CHEMBL.COMPOUND:CHEMBL1201580"  # Found in search
-    castleman_id = "MONDO:0015564"  # Found in search
+    print("="*60)
+    print("PHASE 1.1: ENTITY VERIFICATION")
+    print("="*60)
     
-    print(f"\n=== SEARCHING RELATIONSHIPS FOR KEY ENTITIES ===")
+    # Search for entities
+    search_terms = list(TARGET_ENTITIES.values())
+    results = loader.search_entities(search_terms, max_results=5)
     
-    # Find relationships for these specific entities
-    relationships = loader.find_entity_relationships([
-        adalimumab_id,
-        castleman_id,
-        "TNF"  # Will match any TNF-containing entity
-    ])
+    verification = {}
+    all_found = True
     
-    for entity_id, edges in relationships.items():
-        print(f"\n{entity_id} relationships:")
-        for edge in edges[:10]:  # Show first 10
-            print(f"  {edge['subject']} --{edge['predicate']}--> {edge['object']}")
+    for name, entity_id in TARGET_ENTITIES.items():
+        found = len(results[entity_id]) > 0
+        
+        if found:
+            entity = results[entity_id][0]
+            print(f"\n✅ {name.upper()}: FOUND")
+            print(f"   ID: {entity['id']}")
+            print(f"   Name: {entity['name']}")
+            print(f"   Category: {entity['category']}")
+            verification[name] = {
+                'found': True,
+                'id': entity['id'],
+                'name': entity['name'],
+                'category': entity['category']
+            }
+        else:
+            print(f"\n❌ {name.upper()}: NOT FOUND")
+            print(f"   Expected: {entity_id}")
+            verification[name] = {'found': False, 'expected': entity_id}
+            all_found = False
+    
+    # Save results
+    results_dir = Path("../../results/phase_1_1")
+    results_dir.mkdir(parents=True, exist_ok=True)
+    with open(results_dir / "entity_verification.json", 'w') as f:
+        json.dump(verification, f, indent=2)
+    
+    print("\n" + "="*60)
+    if all_found:
+        print("✅ PHASE 1.1 COMPLETE - All entities verified")
+    else:
+        print("❌ PHASE 1.1 FAILED - Missing entities")
+        exit(1)
