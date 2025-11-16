@@ -1,0 +1,135 @@
+{
+  "test_1": {
+    "status": "WARNING",
+    "architectures": {
+      "GraphSAGE": {
+        "rank": 1,
+        "score": 0.9948551654815674
+      },
+      "GAT": {
+        "rank": 1,
+        "score": 0.9999878406524658
+      },
+      "GCN": {
+        "rank": 32,
+        "score": 0.9729695916175842
+      }
+    }
+  },
+  "test_2": {
+    "status": "PASS",
+    "scalings": {
+      "raw": {
+        "value": 30.7,
+        "rank": 6,
+        "score": 0.9656201601028442
+      },
+      "log2": {
+        "value": 4.940166750482817,
+        "rank": 1,
+        "score": 0.9942522644996643
+      },
+      "log10": {
+        "value": 1.4871383754771865,
+        "rank": 1,
+        "score": 0.9819623827934265
+      },
+      "sqrt": {
+        "value": 5.540758070878027,
+        "rank": 1,
+        "score": 0.996185839176178
+      },
+      "normalized_0_1": {
+        "value": 0.297,
+        "rank": 73,
+        "score": 0.9347990155220032
+      },
+      "z_score": {
+        "value": 2.07,
+        "rank": 1,
+        "score": 0.9862285852432251
+      }
+    },
+    "best": "log2",
+    "log2_rank": 1
+  },
+  "test_3": {
+    "status": "WARNING",
+    "configurations": {
+      "baseline": {
+        "config": {
+          "hidden_dim": 64,
+          "output_dim": 32,
+          "dropout": 0.1,
+          "lr": 0.01
+        },
+        "rank": 1,
+        "score": 0.9949246644973755
+      },
+      "small_model": {
+        "config": {
+          "hidden_dim": 32,
+          "output_dim": 16,
+          "dropout": 0.1,
+          "lr": 0.01
+        },
+        "rank": 77,
+        "score": 0.936079204082489
+      },
+      "large_model": {
+        "config": {
+          "hidden_dim": 128,
+          "output_dim": 64,
+          "dropout": 0.1,
+          "lr": 0.01
+        },
+        "rank": 1,
+        "score": 0.9876911640167236
+      },
+      "high_dropout": {
+        "config": {
+          "hidden_dim": 64,
+          "output_dim": 32,
+          "dropout": 0.3,
+          "lr": 0.01
+        },
+        "rank": 1,
+        "score": 0.9926103949546814
+      },
+      "low_dropout": {
+        "config": {
+          "hidden_dim": 64,
+          "output_dim": 32,
+          "dropout": 0.0,
+          "lr": 0.01
+        },
+        "rank": 3,
+        "score": 0.973535418510437
+      },
+      "high_lr": {
+        "config": {
+          "hidden_dim": 64,
+          "output_dim": 32,
+          "dropout": 0.1,
+          "lr": 0.1
+        },
+        "rank": 844,
+        "score": 1.0
+      },
+      "low_lr": {
+        "config": {
+          "hidden_dim": 64,
+          "output_dim": 32,
+          "dropout": 0.1,
+          "lr": 0.001
+        },
+        "rank": 1,
+        "score": 0.9472494125366211
+      }
+    },
+    "rank_range": [
+      1,
+      844
+    ]
+  }
+}

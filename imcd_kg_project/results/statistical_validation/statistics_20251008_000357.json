@@ -1,0 +1,33 @@
+{
+  "num_trials": 10,
+  "baseline": {
+    "rank_mean": 689.1,
+    "rank_std": 296.9290992812931,
+    "rank_min": 439,
+    "rank_max": 1350,
+    "score_mean": 0.8952071726322174,
+    "score_std": 0.011505716704312507
+  },
+  "enhanced": {
+    "rank_mean": 1.2,
+    "rank_std": 0.4,
+    "rank_min": 1,
+    "rank_max": 2,
+    "score_mean": 0.9755629777908326,
+    "score_std": 0.016740175440452115,
+    "rank_1_count": 8,
+    "rank_1_percentage": 80.0
+  },
+  "improvement": {
+    "mean": 687.9,
+    "std": 296.6359553392003,
+    "min": 438,
+    "max": 1348
+  },
+  "timestamp": "2025-10-08T00:03:57.390733",
+  "t_test": {
+    "t_statistic": 6.957012333990932,
+    "p_value": 6.63280799368823e-05,
+    "significant": true
+  }
+}

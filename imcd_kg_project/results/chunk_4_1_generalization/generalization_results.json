@@ -1,0 +1,47 @@
+{
+  "test_1": {
+    "status": "PASS",
+    "diseases": {
+      "Castleman Disease (iMCD-TAFRO)": {
+        "rank": 1,
+        "score": 0.9953502416610718
+      },
+      "Rheumatoid Arthritis": {
+        "rank": 1,
+        "score": 0.997313916683197
+      },
+      "Crohn Disease": {
+        "rank": 1,
+        "score": 0.9976129531860352
+      },
+      "Psoriasis": {
+        "rank": 1,
+        "score": 0.9979222416877747
+      }
+    },
+    "avg_tnf_rank": 1.0
+  },
+  "test_2": {
+    "status": "WARNING",
+    "avg_unrelated_rank": 1.0
+  },
+  "test_3": {
+    "status": "WARNING",
+    "tnf_avg_improvement": 726.5,
+    "unrelated_avg_improvement": 668.3333333333334
+  },
+  "test_4": {
+    "status": "PASS",
+    "disease_counts": {
+      "MONDO:0005044": 1838,
+      "MONDO:0008383": 1009,
+      "MONDO:0005083": 619,
+      "MONDO:0005148": 982,
+      "MONDO:0005011": 466,
+      "MONDO:0011382": 235,
+      "MONDO:0015564": 26,
+      "MONDO:0019473": 8
+    },
+    "low_data_count": 2
+  }
+}
