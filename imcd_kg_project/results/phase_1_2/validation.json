@@ -1,0 +1,12 @@
+{
+  "adalimumab_exists": true,
+  "castleman_exists": true,
+  "tnf_exists": true,
+  "ada_tnf_direct": true,
+  "tnf_castleman_direct": true,
+  "ada_tnf_path": true,
+  "tnf_castleman_path": true,
+  "ada_tnf_path_length": 1,
+  "tnf_castleman_path_length": 1,
+  "complete_pathway": true
+}
