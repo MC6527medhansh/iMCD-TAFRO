@@ -23,7 +23,7 @@ venv/
 .ipynb_checkpoints
 
 # Results and logs
-results/*/
+# results/*/
 *.log
 
 # OS files
