@@ -100,11 +100,11 @@ try:
     # Load graphs
     logger.info("\n4. Loading graphs...")
     logger.info("   Loading baseline graph...")
-    baseline_data = torch.load(baseline_graph_path)
+    baseline_data = torch.load(baseline_graph_path, weights_only=False)
     logger.info(f"   ✅ Baseline: {baseline_data.num_nodes:,} nodes, {baseline_data.edge_index.shape[1]:,} edges, {baseline_data.x.shape[1]}D features")
     
     logger.info("   Loading enhanced graph...")
-    enhanced_data = torch.load(enhanced_graph_path)
+    enhanced_data = torch.load(enhanced_graph_path, weights_only=False)
     logger.info(f"   ✅ Enhanced: {enhanced_data.num_nodes:,} nodes, {enhanced_data.edge_index.shape[1]:,} edges, {enhanced_data.x.shape[1]}D features")
     
     # Validate graphs loaded correctly
