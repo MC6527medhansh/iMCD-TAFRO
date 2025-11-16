@@ -2,21 +2,24 @@
 """
 Enhanced Drug-Disease Prediction with Experimental Features
 Architecture: GraphSAGE + experimental node features + link prediction
+
+CRITICAL FIX (Phase 2):
+- Graph structure from full_graph.pkl (Phase 1.2 output)
+- Training pairs used as LABELS only, not structure
+- Preserves mechanism paths: adalimumab→TNF→Castleman
 """
 
 import os
-# Fix OpenMP issue before importing torch
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Check if PyTorch Geometric is installed
 try:
     from torch_geometric.nn import SAGEConv
     from torch_geometric.data import Data
-    from torch_geometric.utils import train_test_split_edges
+    from torch_geometric.utils import negative_sampling
     PYTORCH_GEOMETRIC_AVAILABLE = True
 except ImportError:
     print("PyTorch Geometric not installed. Installing...")
@@ -25,15 +28,16 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "torch-geometric"])
     from torch_geometric.nn import SAGEConv
     from torch_geometric.data import Data
-    from torch_geometric.utils import train_test_split_edges
+    from torch_geometric.utils import negative_sampling
     PYTORCH_GEOMETRIC_AVAILABLE = True
+
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import Dict, List, Tuple
 import logging
+import pickle
 
-# Check for scikit-learn
 try:
     from sklearn.metrics import roc_auc_score
 except ImportError:
@@ -43,15 +47,13 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "scikit-learn"])
     from sklearn.metrics import roc_auc_score
 
-from rtx_kg_loader import RTXKGLoader
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class GraphSAGEModel(torch.nn.Module):
-    """
-    GraphSAGE model for link prediction with experimental node features
-    """
+    """GraphSAGE model for link prediction with experimental node features"""
+    
     def __init__(self, input_dim, hidden_dim, output_dim, dropout=0.1):
         super().__init__()
         self.conv1 = SAGEConv(input_dim, hidden_dim)
@@ -69,45 +71,78 @@ class GraphSAGEModel(torch.nn.Module):
         row, col = edge_index
         return torch.sigmoid(torch.sum(z[row] * z[col], dim=1))
 
+
 class ExperimentalGraphPredictor:
     """
     Enhanced drug-disease prediction using experimental evidence
     
-    Architecture:
-    - Build graph from verified training data
+    Architecture (CORRECTED):
+    - Load FULL graph from Phase 1.2 (160K nodes, 3.6M edges)
+    - Use training pairs as LABELS only
     - Add experimental features to TNF-related nodes
     - Train GraphSAGE for link prediction
-    - Compare baseline vs enhanced rankings
     """
     
-    def __init__(self, kg_loader: RTXKGLoader):
-        self.kg_loader = kg_loader
+    def __init__(self, kg_loader=None, config_path=None):
+        """
+        Initialize predictor
         
-        # Experimental evidence from iMCD paper
+        Args:
+            kg_loader: Optional RTXKGLoader (kept for backward compatibility)
+            config_path: Path to config.py (auto-detected if None)
+        """
+        # Auto-detect config
+        if config_path is None:
+            config_path = Path(__file__).parent.parent / "config.py"
+        
+        # Import config dynamically
+        import sys
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("config", config_path)
+        config = importlib.util.module_from_spec(spec)
+        sys.modules["config"] = config
+        spec.loader.exec_module(config)
+        
+        # Store config values
+        self.processed_graph_path = config.PROCESSED_GRAPH_PATH
+        self.training_data_path = config.TRAINING_DATA_PATH if hasattr(config, 'TRAINING_DATA_PATH') else config.DATA_DIR / "kgml_data" / "training_data"
+        self.adalimumab_id = config.ADALIMUMAB_ID
+        self.castleman_id = config.CASTLEMAN_ID
+        self.tnf_id = config.TNF_ID
+        self.tnf_fold_change = 2 ** config.TNF_LOG2_FOLD_CHANGE  # Convert log2 back to linear
+        
+        # Experimental evidence
         self.experimental_evidence = {
-            'TNF_fold_change': 30.7,  # CD4+ T cells
-            'functional_validation': 2.53,  # Functional assay result
+            'TNF_fold_change': self.tnf_fold_change,  # 30.7x from paper
+            'TNF_log2_fold_change': config.TNF_LOG2_FOLD_CHANGE,  # 4.94
             'pathway_weight': 2.0
         }
         
-        # Verified entities from our analysis
-        self.adalimumab_id = "CHEMBL.COMPOUND:CHEMBL1201580"
-        self.castleman_id = "MONDO:0015564"
-        self.tnf_inhibitor_class = "UMLS:C3653350"
-        
-        # Training data paths
-        self.training_data_path = Path(__file__).parent.parent.parent / "data" / "kgml_data" / "training_data"
-        
-        # Graph components
+        # Graph components (will be populated by build_graph)
         self.entity_to_idx = {}
         self.idx_to_entity = {}
         self.node_features = None
         self.edge_index = None
-        self.edge_labels = None
+        self.train_edge_index = None
+        self.train_edge_labels = None
         
+        logger.info(f"Initialized ExperimentalGraphPredictor")
+        logger.info(f"  Graph path: {self.processed_graph_path}")
+        logger.info(f"  Training data: {self.training_data_path}")
+        logger.info(f"  Adalimumab: {self.adalimumab_id}")
+        logger.info(f"  Castleman: {self.castleman_id}")
+        logger.info(f"  TNF: {self.tnf_id}")
+    
     def load_training_data(self) -> List[Tuple[str, str, int]]:
-        """Load drug-disease pairs from verified training data"""
+        """
+        Load drug-disease pairs from verified training data
+        
+        Returns:
+            List of (drug_id, disease_id, label) tuples
+        """
         pairs = []
+        
+        logger.info(f"Loading training data from {self.training_data_path}")
         
         # Load positive pairs
         for file_name in ['repoDB_tp.txt', 'semmed_tp.txt', 'ndf_tp.txt', 'mychem_tp.txt']:
@@ -115,7 +150,6 @@ class ExperimentalGraphPredictor:
             if file_path.exists():
                 df = pd.read_csv(file_path, sep='\t')
                 
-                # Use column names, not positions
                 if 'source' in df.columns and 'target' in df.columns:
                     for _, row in df.iterrows():
                         drug_id = str(row['source']) if pd.notna(row['source']) else None
@@ -123,6 +157,8 @@ class ExperimentalGraphPredictor:
                         
                         if drug_id and disease_id:
                             pairs.append((drug_id, disease_id, 1))
+                
+                logger.info(f"  Loaded {file_name}: {len(df)} positive pairs")
         
         # Load negative pairs
         for file_name in ['repoDB_tn.txt', 'semmed_tn.txt', 'ndf_tn.txt', 'mychem_tn.txt']:
@@ -137,92 +173,168 @@ class ExperimentalGraphPredictor:
                         
                         if drug_id and disease_id:
                             pairs.append((drug_id, disease_id, 0))
+                
+                logger.info(f"  Loaded {file_name}: {len(df)} negative pairs")
         
-        logger.info(f"Loaded {len(pairs)} drug-disease pairs")
+        logger.info(f"Total training pairs loaded: {len(pairs)}")
+        
+        # DATA LEAKAGE CHECK
+        adalimumab_castleman_pairs = [
+            (d, dis) for d, dis, _ in pairs 
+            if d == self.adalimumab_id and dis == self.castleman_id
+        ]
+        
+        if len(adalimumab_castleman_pairs) > 0:
+            logger.error(f"❌ DATA LEAKAGE DETECTED: {len(adalimumab_castleman_pairs)} adalimumab-Castleman pairs in training!")
+            raise ValueError("Data leakage: Target pair found in training data")
+        else:
+            logger.info(f"✅ No data leakage: Adalimumab-Castleman pair NOT in training")
+        
         return pairs
-        
+    
     def build_graph_with_experimental_features(self, use_experimental=True):
         """
-        Build PyTorch Geometric graph with experimental node features
+        Build PyTorch Geometric graph with experimental features
+        
+        CRITICAL CHANGE (Phase 2):
+        - Graph structure from full_graph.pkl (Phase 1.2 output)
+        - Training pairs used as LABELS only, not structure
+        - Preserves mechanism paths: adalimumab→TNF→Castleman
+        
+        Args:
+            use_experimental: If True, add TNF experimental feature (4D), else baseline (3D)
+        
+        Returns:
+            PyTorch Geometric Data object
         """
-        logger.info(f"Building graph {'WITH' if use_experimental else 'WITHOUT'} experimental features...")
+        logger.info(f"="*60)
+        logger.info(f"Building graph {'WITH' if use_experimental else 'WITHOUT'} experimental features")
+        logger.info(f"="*60)
         
-        # Load training pairs
-        training_pairs = self.load_training_data()
+        # 1. Load FULL graph from Phase 1.2 (NOT from training pairs!)
+        logger.info(f"Loading full graph from {self.processed_graph_path}")
         
-        # Extract unique entities
-        entities = set()
-        edges = []
-        labels = []
+        if not self.processed_graph_path.exists():
+            raise FileNotFoundError(f"Full graph not found: {self.processed_graph_path}\nRun Phase 1.2 first!")
         
-        for drug_id, disease_id, label in training_pairs:
-            entities.add(drug_id)
-            entities.add(disease_id)
-            edges.append((drug_id, disease_id))
-            labels.append(label)
+        with open(self.processed_graph_path, 'rb') as f:
+            nx_graph = pickle.load(f)
         
-        # Create entity mappings - VALIDATE TYPES FIRST
-        entity_list = sorted(entities)
+        logger.info(f"✅ Loaded graph: {nx_graph.number_of_nodes():,} nodes, {nx_graph.number_of_edges():,} edges")
         
-        # CRITICAL: Ensure all entities are strings (fixes previous TypeError)
-        entity_list = [str(e) for e in entity_list if e is not None and str(e).strip()]
-        
-        self.entity_to_idx = {entity: idx for idx, entity in enumerate(entity_list)}
+        # 2. Create entity mappings
+        entities = sorted(nx_graph.nodes())  # Sort for reproducibility
+        self.entity_to_idx = {entity: idx for idx, entity in enumerate(entities)}
         self.idx_to_entity = {idx: entity for entity, idx in self.entity_to_idx.items()}
+        num_nodes = len(entities)
         
-        num_nodes = len(entity_list)
+        logger.info(f"Entity mapping created: {num_nodes:,} nodes")
         
-        # Create node features with CORRECT dimensionality
-        if use_experimental:
-            num_features = 4  # 3 base + 1 experimental
-        else:
-            num_features = 3  # Just base features
+        # 3. Build node features
+        num_features = 4 if use_experimental else 3
+        node_features = np.zeros((num_nodes, num_features), dtype=np.float32)
         
-        node_features = np.zeros((num_nodes, num_features))
+        drug_count = 0
+        disease_count = 0
+        other_count = 0
+        tnf_feature_count = 0
         
         for entity, idx in self.entity_to_idx.items():
             # Entity type features (first 3 dimensions)
             if entity.startswith('CHEMBL.COMPOUND:'):
                 node_features[idx, 0] = 1.0  # Drug
+                drug_count += 1
             elif entity.startswith('MONDO:'):
                 node_features[idx, 1] = 1.0  # Disease
+                disease_count += 1
             else:
-                node_features[idx, 2] = 1.0  # Other
+                node_features[idx, 2] = 1.0  # Other (genes, proteins, pathways)
+                other_count += 1
             
-            # Add experimental features ONLY if enabled (4th dimension)
-            if use_experimental:
-                if self._is_tnf_related(entity):
-                    node_features[idx, 3] = np.log2(self.experimental_evidence['TNF_fold_change'])
-                    logger.info(f"Added experimental feature to {entity}: {node_features[idx, 3]:.2f}")
+            # Experimental feature (4th dimension) - ONLY if enabled
+            if use_experimental and self._is_tnf_related(entity):
+                node_features[idx, 3] = self.experimental_evidence['TNF_log2_fold_change']
+                tnf_feature_count += 1
+                logger.info(f"  ⭐ Added TNF feature to {entity}: {node_features[idx, 3]:.4f}")
         
-        # Convert edges to tensor format
-        edge_pairs = []
-        edge_labels = []
+        logger.info(f"Node features assigned:")
+        logger.info(f"  Drugs: {drug_count:,}")
+        logger.info(f"  Diseases: {disease_count:,}")
+        logger.info(f"  Other (genes/proteins): {other_count:,}")
+        if use_experimental:
+            logger.info(f"  TNF features assigned: {tnf_feature_count}")
         
-        for (drug_id, disease_id), label in zip(edges, labels):
-            # Validate entities exist in mapping
-            if drug_id not in self.entity_to_idx or disease_id not in self.entity_to_idx:
-                logger.warning(f"Skipping edge: {drug_id} -> {disease_id} (entity not in mapping)")
-                continue
-                
-            drug_idx = self.entity_to_idx[drug_id]
-            disease_idx = self.entity_to_idx[disease_id]
-            edge_pairs.append([drug_idx, disease_idx])
-            edge_pairs.append([disease_idx, drug_idx])  # Undirected
-            edge_labels.extend([label, label])
+        # 4. Convert NetworkX edges to PyG format (undirected)
+        edge_list = []
+        for source, target in nx_graph.edges():
+            if source in self.entity_to_idx and target in self.entity_to_idx:
+                source_idx = self.entity_to_idx[source]
+                target_idx = self.entity_to_idx[target]
+                edge_list.append([source_idx, target_idx])
+                edge_list.append([target_idx, source_idx])  # Undirected
         
-        edge_index = torch.tensor(edge_pairs, dtype=torch.long).t().contiguous()
+        edge_index = torch.tensor(edge_list, dtype=torch.long).t().contiguous()
+        
+        logger.info(f"Graph edges converted: {edge_index.shape[1]:,} edges (bidirectional)")
+        
+        # 5. Load training pairs (for LABELS, not structure!)
+        training_pairs = self.load_training_data()
+        
+        # 6. Create edge labels from training pairs
+        train_edge_list = []
+        train_labels = []
+        skipped = 0
+        
+        for drug_id, disease_id, label in training_pairs:
+            if drug_id in self.entity_to_idx and disease_id in self.entity_to_idx:
+                drug_idx = self.entity_to_idx[drug_id]
+                disease_idx = self.entity_to_idx[disease_id]
+                train_edge_list.append([drug_idx, disease_idx])
+                train_labels.append(label)
+            else:
+                skipped += 1
+        
+        if skipped > 0:
+            logger.warning(f"⚠️  Skipped {skipped} training pairs (entities not in graph)")
+        
+        train_edge_index = torch.tensor(train_edge_list, dtype=torch.long).t().contiguous()
+        train_edge_labels = torch.tensor(train_labels, dtype=torch.float)
+        
+        logger.info(f"Training supervision created: {len(train_labels):,} labeled pairs")
+        logger.info(f"  Positive pairs: {int(train_edge_labels.sum().item()):,}")
+        logger.info(f"  Negative pairs: {len(train_labels) - int(train_edge_labels.sum().item()):,}")
+        
+        # 7. Store for later use
         self.node_features = torch.tensor(node_features, dtype=torch.float)
         self.edge_index = edge_index
-        self.edge_labels = torch.tensor(edge_labels, dtype=torch.float)
+        self.train_edge_index = train_edge_index
+        self.train_edge_labels = train_edge_labels
         
-        # VALIDATION: Check shapes before returning
-        logger.info(f"Graph stats: {num_nodes} nodes, {len(edge_pairs)} edges, {num_features}D features")
-        assert self.node_features.shape == (num_nodes, num_features), \
-            f"Feature shape mismatch: expected ({num_nodes}, {num_features}), got {self.node_features.shape}"
+        # 8. Validate critical entities exist
+        logger.info(f"Validating critical entities...")
+        assert self.adalimumab_id in self.entity_to_idx, f"Adalimumab not in graph!"
+        assert self.castleman_id in self.entity_to_idx, f"Castleman not in graph!"
+        assert self.tnf_id in self.entity_to_idx, f"TNF not in graph!"
+        logger.info(f"✅ All critical entities present")
         
-        # Create PyTorch Geometric data object
-        data = Data(x=self.node_features, edge_index=self.edge_index, y=self.edge_labels)
+        # 9. Create PyTorch Geometric data object
+        data = Data(
+            x=self.node_features,
+            edge_index=self.edge_index,
+            train_edge_index=self.train_edge_index,
+            train_edge_labels=self.train_edge_labels,
+            num_nodes=num_nodes
+        )
+        
+        logger.info(f"="*60)
+        logger.info(f"Graph construction complete:")
+        logger.info(f"  Nodes: {num_nodes:,}")
+        logger.info(f"  Message-passing edges: {edge_index.shape[1]:,}")
+        logger.info(f"  Training pairs: {len(train_labels):,}")
+        logger.info(f"  Feature dimensions: {num_features}D")
+        logger.info(f"  Graph mode: {'ENHANCED (4D with TNF)' if use_experimental else 'BASELINE (3D)'}")
+        logger.info(f"="*60)
+        
         return data
     
     def _is_tnf_related(self, entity_id: str) -> bool:
@@ -230,58 +342,65 @@ class ExperimentalGraphPredictor:
         Determine if entity should receive experimental TNF features
         Based on biological justification
         """
-        tnf_keywords = ['TNF', 'tumor necrosis factor', 'adalimumab', 'tnf inhibitor']
+        # Primary TNF gene/protein
+        if entity_id == self.tnf_id:
+            return True
         
-        # Check our verified TNF-related entities
+        # Adalimumab (TNF inhibitor)
         if entity_id == self.adalimumab_id:
             return True
-        if entity_id == self.tnf_inhibitor_class:
-            return True
         
-        # Check for TNF-related terms
+        # Other TNF-related entities
+        tnf_keywords = ['TNF', 'tumor necrosis factor', 'tnf inhibitor']
         for keyword in tnf_keywords:
             if keyword.lower() in entity_id.lower():
                 return True
         
         return False
     
-    def train_model(self, data, model, epochs=200):
-        """Train GraphSAGE model with negative sampling"""
-        from torch_geometric.utils import negative_sampling
+    def train_model(self, data, model, epochs=200, lr=0.01):
+        """
+        Train GraphSAGE model using training pairs as supervision
         
-        data = train_test_split_edges(data, val_ratio=0.1, test_ratio=0.1)
-        
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        CRITICAL: Uses data.train_edge_index for supervision, NOT edge_index
+        """
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         criterion = torch.nn.BCELoss()
         
         model.train()
+        
+        logger.info(f"Training model for {epochs} epochs...")
+        
         for epoch in range(epochs):
             optimizer.zero_grad()
             
-            # Generate negative samples for this epoch
-            neg_edge_index = negative_sampling(
-                edge_index=data.train_pos_edge_index,
-                num_nodes=data.num_nodes,
-                num_neg_samples=data.train_pos_edge_index.size(1)
-            )
+            # Forward pass using ALL edges for message passing
+            z = model(data.x, data.edge_index)
             
-            # Forward pass
-            z = model(data.x, data.train_pos_edge_index)
+            # Get predictions for training pairs
+            pos_mask = data.train_edge_labels == 1
+            neg_mask = data.train_edge_labels == 0
             
-            # Positive edges
-            pos_pred = model.predict_links(z, data.train_pos_edge_index)
+            pos_edge_index = data.train_edge_index[:, pos_mask]
+            neg_edge_index = data.train_edge_index[:, neg_mask]
+            
+            # Positive edge predictions
+            pos_pred = model.predict_links(z, pos_edge_index)
             pos_loss = criterion(pos_pred, torch.ones(pos_pred.size(0)))
             
-            # Negative edges (sampled this epoch)
+            # Negative edge predictions
             neg_pred = model.predict_links(z, neg_edge_index)
             neg_loss = criterion(neg_pred, torch.zeros(neg_pred.size(0)))
             
+            # Total loss
             loss = pos_loss + neg_loss
             loss.backward()
             optimizer.step()
             
             if epoch % 50 == 0:
-                logger.info(f"Epoch {epoch}, Loss: {loss:.4f}")
+                logger.info(f"  Epoch {epoch}/{epochs}, Loss: {loss.item():.4f}")
+        
+        logger.info(f"✅ Training complete")
         
         return model, data
     
@@ -291,11 +410,13 @@ class ExperimentalGraphPredictor:
         Returns ranking of all drugs for the disease
         """
         model.eval()
+        
         with torch.no_grad():
-            z = model(data.x, data.train_pos_edge_index)
+            # Get node embeddings
+            z = model(data.x, data.edge_index)
             
             if disease_entity not in self.entity_to_idx:
-                logger.warning(f"Disease {disease_entity} not in training data")
+                logger.warning(f"Disease {disease_entity} not in graph")
                 return {}
             
             disease_idx = self.entity_to_idx[disease_entity]
@@ -310,29 +431,44 @@ class ExperimentalGraphPredictor:
             
             # Sort by score
             ranked_drugs = sorted(drug_scores.items(), key=lambda x: x[1], reverse=True)
+            
             return dict(ranked_drugs)
     
-    def compare_predictions(self) -> Dict[str, any]:
+    def compare_predictions(self, epochs=200) -> Dict[str, any]:
         """
         Compare baseline vs enhanced predictions
         """
-        logger.info("Training baseline model (no experimental features)...")
+        logger.info("\n" + "="*60)
+        logger.info("BASELINE vs ENHANCED COMPARISON")
+        logger.info("="*60)
+        
+        # Set seed for reproducibility
+        torch.manual_seed(42)
+        np.random.seed(42)
+        
+        # Build and train baseline model
+        logger.info("\n1. BASELINE MODEL (3D features):")
         baseline_data = self.build_graph_with_experimental_features(use_experimental=False)
         baseline_model = GraphSAGEModel(input_dim=3, hidden_dim=64, output_dim=32)
-        baseline_model, baseline_data = self.train_model(baseline_data, baseline_model)
+        baseline_model, baseline_data = self.train_model(baseline_data, baseline_model, epochs=epochs)
         
-        logger.info("Training enhanced model (with experimental features)...")
+        # Build and train enhanced model
+        logger.info("\n2. ENHANCED MODEL (4D features with TNF):")
+        torch.manual_seed(42)  # Reset seed
         enhanced_data = self.build_graph_with_experimental_features(use_experimental=True)
         enhanced_model = GraphSAGEModel(input_dim=4, hidden_dim=64, output_dim=32)
-        enhanced_model, enhanced_data = self.train_model(enhanced_data, enhanced_model)
+        enhanced_model, enhanced_data = self.train_model(enhanced_data, enhanced_model, epochs=epochs)
         
         # Evaluate rankings for Castleman disease
+        logger.info("\n3. EVALUATION:")
         baseline_ranking = self.evaluate_drug_ranking(baseline_model, baseline_data, self.castleman_id)
         enhanced_ranking = self.evaluate_drug_ranking(enhanced_model, enhanced_data, self.castleman_id)
         
         # Find adalimumab rankings
         baseline_adalimumab_rank = None
         enhanced_adalimumab_rank = None
+        baseline_adalimumab_score = 0
+        enhanced_adalimumab_score = 0
         
         for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
             if drug == self.adalimumab_id:
@@ -346,40 +482,48 @@ class ExperimentalGraphPredictor:
                 enhanced_adalimumab_score = score
                 break
         
+        improvement = baseline_adalimumab_rank - enhanced_adalimumab_rank if (baseline_adalimumab_rank and enhanced_adalimumab_rank) else 0
+        
+        logger.info(f"\nRESULTS:")
+        logger.info(f"  Baseline:  Rank #{baseline_adalimumab_rank}, Score {baseline_adalimumab_score:.4f}")
+        logger.info(f"  Enhanced:  Rank #{enhanced_adalimumab_rank}, Score {enhanced_adalimumab_score:.4f}")
+        logger.info(f"  Improvement: {improvement:+d} positions")
+        
         return {
             'baseline_adalimumab_rank': baseline_adalimumab_rank,
             'enhanced_adalimumab_rank': enhanced_adalimumab_rank,
-            'baseline_adalimumab_score': baseline_adalimumab_score if baseline_adalimumab_rank else 0,
-            'enhanced_adalimumab_score': enhanced_adalimumab_score if enhanced_adalimumab_rank else 0,
-            'ranking_improvement': (baseline_adalimumab_rank - enhanced_adalimumab_rank) if baseline_adalimumab_rank and enhanced_adalimumab_rank else 0,
+            'baseline_adalimumab_score': baseline_adalimumab_score,
+            'enhanced_adalimumab_score': enhanced_adalimumab_score,
+            'ranking_improvement': improvement,
             'baseline_top_10': list(baseline_ranking.items())[:10],
             'enhanced_top_10': list(enhanced_ranking.items())[:10]
         }
 
+
 if __name__ == "__main__":
-    # Test the enhanced predictor
-    kg_path = Path("../../data/kgml_data/bkg_rtxkg2c_v2.7.3")
-    loader = RTXKGLoader(kg_path)
+    """Quick test of enhanced predictor"""
+    import sys
+    from pathlib import Path
     
-    predictor = ExperimentalGraphPredictor(loader)
-    results = predictor.compare_predictions()
+    # Add project root to path
+    project_root = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(project_root))
     
-    print("=== EXPERIMENTAL ENHANCEMENT RESULTS ===")
-    print(f"Baseline adalimumab rank: {results['baseline_adalimumab_rank']}")
-    print(f"Enhanced adalimumab rank: {results['enhanced_adalimumab_rank']}")
-    print(f"Ranking improvement: {results['ranking_improvement']} positions")
+    print("Testing ExperimentalGraphPredictor...")
+    
+    predictor = ExperimentalGraphPredictor()
+    results = predictor.compare_predictions(epochs=100)
+    
+    print("\n" + "="*60)
+    print("EXPERIMENTAL ENHANCEMENT RESULTS")
+    print("="*60)
+    print(f"Baseline adalimumab rank: #{results['baseline_adalimumab_rank']}")
+    print(f"Enhanced adalimumab rank: #{results['enhanced_adalimumab_rank']}")
+    print(f"Ranking improvement: {results['ranking_improvement']:+d} positions")
     print(f"Baseline score: {results['baseline_adalimumab_score']:.4f}")
     print(f"Enhanced score: {results['enhanced_adalimumab_score']:.4f}")
     
-    print("\nBaseline top 10:")
-    for i, (drug, score) in enumerate(results['baseline_top_10'], 1):
-        print(f"{i}. {drug}: {score:.4f}")
-    
-    print("\nEnhanced top 10:")
-    for i, (drug, score) in enumerate(results['enhanced_top_10'], 1):
-        print(f"{i}. {drug}: {score:.4f}")
-    
     if results['ranking_improvement'] > 0:
-        print(f"\nSUCCESS: Adalimumab improved by {results['ranking_improvement']} positions!")
+        print(f"\n✅ SUCCESS: Adalimumab improved by {results['ranking_improvement']} positions!")
     else:
-        print(f"\nWARNING: No improvement detected")
+        print(f"\n⚠️  WARNING: No improvement detected")
