@@ -435,77 +435,77 @@ class ExperimentalGraphPredictor:
             return dict(ranked_drugs)
     
     def compare_predictions(self, epochs=200, seed=None) -> Dict[str, any]:
-    """
-    Compare baseline vs enhanced predictions
-    
-    Args:
-        epochs: Number of training epochs (default: 200)
-        seed: Random seed for reproducibility. If None, no seed is set.
-    """
-    logger.info("\n" + "="*60)
-    logger.info("BASELINE vs ENHANCED COMPARISON")
-    if seed is not None:
-        logger.info(f"Random seed: {seed}")
-    logger.info("="*60)
-    
-    # Set seed if provided
-    if seed is not None:
-        torch.manual_seed(seed)
-        np.random.seed(seed)
-        if torch.cuda.is_available():
-            torch.cuda.manual_seed(seed)
-    
-    # Build and train baseline model
-    logger.info("\n1. BASELINE MODEL (3D features):")
-    baseline_data = self.build_graph_with_experimental_features(use_experimental=False)
-    baseline_model = GraphSAGEModel(input_dim=3, hidden_dim=64, output_dim=32)
-    baseline_model, baseline_data = self.train_model(baseline_data, baseline_model, epochs=epochs)
-    
-    # Build and train enhanced model
-    logger.info("\n2. ENHANCED MODEL (4D features with TNF):")
-    enhanced_data = self.build_graph_with_experimental_features(use_experimental=True)
-    enhanced_model = GraphSAGEModel(input_dim=4, hidden_dim=64, output_dim=32)
-    enhanced_model, enhanced_data = self.train_model(enhanced_data, enhanced_model, epochs=epochs)
-    
-    # Get rankings
-    logger.info("\n3. EVALUATING RANKINGS:")
-    baseline_ranking = self.evaluate_drug_ranking(
-        baseline_model, baseline_data, self.castleman_id
-    )
-    enhanced_ranking = self.evaluate_drug_ranking(
-        enhanced_model, enhanced_data, self.castleman_id
-    )
-    
-    # Find adalimumab ranks
-    baseline_adalimumab_rank = None
-    baseline_adalimumab_score = None
-    for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
-        if drug == self.adalimumab_id:
-            baseline_adalimumab_rank = rank
-            baseline_adalimumab_score = score
-            break
-    
-    enhanced_adalimumab_rank = None
-    enhanced_adalimumab_score = None
-    for rank, (drug, score) in enumerate(enhanced_ranking.items(), 1):
-        if drug == self.adalimumab_id:
-            enhanced_adalimumab_rank = rank
-            enhanced_adalimumab_score = score
-            break
-    
-    # Calculate improvement
-    ranking_improvement = baseline_adalimumab_rank - enhanced_adalimumab_rank
-    
-    # Return results
-    return {
-        'baseline_adalimumab_rank': baseline_adalimumab_rank,
-        'baseline_adalimumab_score': baseline_adalimumab_score,
-        'enhanced_adalimumab_rank': enhanced_adalimumab_rank,
-        'enhanced_adalimumab_score': enhanced_adalimumab_score,
-        'ranking_improvement': ranking_improvement,
-        'baseline_top_10': list(baseline_ranking.items())[:10],
-        'enhanced_top_10': list(enhanced_ranking.items())[:10]
-    }
+        """
+        Compare baseline vs enhanced predictions
+        
+        Args:
+            epochs: Number of training epochs (default: 200)
+            seed: Random seed for reproducibility. If None, no seed is set.
+        """
+        logger.info("\n" + "="*60)
+        logger.info("BASELINE vs ENHANCED COMPARISON")
+        if seed is not None:
+            logger.info(f"Random seed: {seed}")
+        logger.info("="*60)
+        
+        # Set seed if provided
+        if seed is not None:
+            torch.manual_seed(seed)
+            np.random.seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed(seed)
+        
+        # Build and train baseline model
+        logger.info("\n1. BASELINE MODEL (3D features):")
+        baseline_data = self.build_graph_with_experimental_features(use_experimental=False)
+        baseline_model = GraphSAGEModel(input_dim=3, hidden_dim=64, output_dim=32)
+        baseline_model, baseline_data = self.train_model(baseline_data, baseline_model, epochs=epochs)
+        
+        # Build and train enhanced model
+        logger.info("\n2. ENHANCED MODEL (4D features with TNF):")
+        enhanced_data = self.build_graph_with_experimental_features(use_experimental=True)
+        enhanced_model = GraphSAGEModel(input_dim=4, hidden_dim=64, output_dim=32)
+        enhanced_model, enhanced_data = self.train_model(enhanced_data, enhanced_model, epochs=epochs)
+        
+        # Get rankings
+        logger.info("\n3. EVALUATING RANKINGS:")
+        baseline_ranking = self.evaluate_drug_ranking(
+            baseline_model, baseline_data, self.castleman_id
+        )
+        enhanced_ranking = self.evaluate_drug_ranking(
+            enhanced_model, enhanced_data, self.castleman_id
+        )
+        
+        # Find adalimumab ranks
+        baseline_adalimumab_rank = None
+        baseline_adalimumab_score = None
+        for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
+            if drug == self.adalimumab_id:
+                baseline_adalimumab_rank = rank
+                baseline_adalimumab_score = score
+                break
+        
+        enhanced_adalimumab_rank = None
+        enhanced_adalimumab_score = None
+        for rank, (drug, score) in enumerate(enhanced_ranking.items(), 1):
+            if drug == self.adalimumab_id:
+                enhanced_adalimumab_rank = rank
+                enhanced_adalimumab_score = score
+                break
+        
+        # Calculate improvement
+        ranking_improvement = baseline_adalimumab_rank - enhanced_adalimumab_rank
+        
+        # Return results
+        return {
+            'baseline_adalimumab_rank': baseline_adalimumab_rank,
+            'baseline_adalimumab_score': baseline_adalimumab_score,
+            'enhanced_adalimumab_rank': enhanced_adalimumab_rank,
+            'enhanced_adalimumab_score': enhanced_adalimumab_score,
+            'ranking_improvement': ranking_improvement,
+            'baseline_top_10': list(baseline_ranking.items())[:10],
+            'enhanced_top_10': list(enhanced_ranking.items())[:10]
+        }
 
 
 if __name__ == "__main__":
