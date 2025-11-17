@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=phase_4_1_stat
+#SBATCH --job-name=phase_4_1_fixed
 #SBATCH --account=st-singha53-1
-#SBATCH --time=06:00:00
+#SBATCH --time=08:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
-#SBATCH --output=logs/phase_4_1_%j.txt
+#SBATCH --output=logs/phase_4_1_fixed_%j.txt
 
 module load gcc/9.4.0 miniconda3/4.9.2
 source activate imcd_kg
@@ -23,31 +23,22 @@ import json
 from pathlib import Path
 from scipy import stats
 
-print("="*60)
-print("PHASE 4.1: STATISTICAL VALIDATION")
-print("="*60)
+print("="*70)
+print("PHASE 4.1 (FIXED): STATISTICAL VALIDATION WITH PROPER SEEDS")
+print("="*70)
 
-# Initialize predictor
 predictor = ExperimentalGraphPredictor()
-
-# 10 different random seeds
 seeds = [42, 123, 456, 789, 101, 202, 303, 404, 505, 606]
 trial_results = []
 
-# Run 10 trials
 for i, seed in enumerate(seeds, 1):
-    print(f"\n{'='*60}")
-    print(f"TRIAL {i}/10 (Seed: {seed})")
-    print(f"{'='*60}")
+    print(f"\n{'='*70}")
+    print(f"TRIAL {i}/10 - SEED: {seed}")
+    print(f"{'='*70}")
     
-    # Set seeds
-    torch.manual_seed(seed)
-    np.random.seed(seed)
+    # Pass seed to compare_predictions (this is the fix!)
+    trial = predictor.compare_predictions(epochs=200, seed=seed)
     
-    # Run comparison
-    trial = predictor.compare_predictions(epochs=200)
-    
-    # Store results
     trial_results.append({
         'trial': i,
         'seed': seed,
@@ -63,16 +54,15 @@ for i, seed in enumerate(seeds, 1):
     print(f"  Enhanced:    #{trial['enhanced_adalimumab_rank']:,} (score: {trial['enhanced_adalimumab_score']:.4f})")
     print(f"  Improvement: +{trial['ranking_improvement']:,} positions")
 
-# Calculate statistics
-print(f"\n{'='*60}")
+# Statistics
+print(f"\n{'='*70}")
 print("STATISTICAL ANALYSIS")
-print(f"{'='*60}")
+print(f"{'='*70}")
 
 baseline_ranks = [r['baseline_rank'] for r in trial_results]
 enhanced_ranks = [r['enhanced_rank'] for r in trial_results]
 improvements = [r['improvement'] for r in trial_results]
 
-# Descriptive statistics
 baseline_mean = np.mean(baseline_ranks)
 baseline_std = np.std(baseline_ranks, ddof=1)
 enhanced_mean = np.mean(enhanced_ranks)
@@ -80,16 +70,12 @@ enhanced_std = np.std(enhanced_ranks, ddof=1)
 improvement_mean = np.mean(improvements)
 improvement_std = np.std(improvements, ddof=1)
 
-# Confidence intervals (95%)
 from scipy.stats import t as t_dist
 ci_95 = t_dist.interval(0.95, len(improvements)-1, 
                         loc=improvement_mean, 
                         scale=improvement_std/np.sqrt(len(improvements)))
 
-# Paired t-test
 t_stat, p_value = stats.ttest_rel(baseline_ranks, enhanced_ranks)
-
-# Effect size (Cohen's d)
 cohens_d = improvement_mean / improvement_std
 
 print(f"\nBaseline Rankings:")
@@ -120,17 +106,26 @@ elif p_value < 0.05:
     print(f"  ✅ SIGNIFICANT (p < 0.05)")
 else:
     print(f"  ❌ NOT SIGNIFICANT (p >= 0.05)")
-    print(f"  ⚠️  WARNING: Improvement may not be statistically significant!")
+
+# CRITICAL: Validate seed variation
+print(f"\n{'='*70}")
+print("SEED VARIATION CHECK")
+print(f"{'='*70}")
+print(f"Baseline std: {baseline_std:.0f} positions")
+if baseline_std < 50:
+    print(f"⚠️  WARNING: Very low variance - seeds may not be working properly")
+elif baseline_std < 200:
+    print(f"⚠️  Low variance but acceptable")
+else:
+    print(f"✅ Good variance - seeds are having expected effect")
 
 # Save results
-results_dir = Path('results/phase_4_1_statistical')
+results_dir = Path('results/phase_4_1_fixed')
 results_dir.mkdir(parents=True, exist_ok=True)
 
-# Save trial details
 with open(results_dir / 'trial_results.json', 'w') as f:
     json.dump(trial_results, f, indent=2)
 
-# Save summary statistics
 summary = {
     'num_trials': len(seeds),
     'seeds': seeds,
@@ -165,11 +160,9 @@ summary = {
 with open(results_dir / 'statistical_summary.json', 'w') as f:
     json.dump(summary, f, indent=2)
 
-print(f"\n{'='*60}")
-print("✅ PHASE 4.1 COMPLETE")
-print(f"{'='*60}")
+print(f"\n{'='*70}")
+print("✅ PHASE 4.1 (FIXED) COMPLETE")
+print(f"{'='*70}")
 print(f"\nResults saved to: {results_dir}")
-print(f"  - trial_results.json (all 10 trials)")
-print(f"  - statistical_summary.json (summary statistics)")
 
 PYEOF
