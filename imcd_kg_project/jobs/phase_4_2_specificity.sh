@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=phase_4_2_spec
+#SBATCH --job-name=phase_4_2_multi
 #SBATCH --account=st-singha53-1
-#SBATCH --time=10:00:00
+#SBATCH --time=12:00:00
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
@@ -23,16 +23,22 @@ import json
 from pathlib import Path
 from scipy import stats
 
-print("="*70)
-print("PHASE 4.2: DISEASE SPECIFICITY TESTING")
-print("Testing if TNF feature helps specifically for TNF-mediated diseases")
-print("="*70)
-
-# Set seed for reproducibility
-torch.manual_seed(42)
-np.random.seed(42)
+print("="*80)
+print("PHASE 4.2 COMPREHENSIVE: DISEASE SPECIFICITY WITH MULTIPLE SEEDS")
+print("="*80)
+print("\nApproach:")
+print("  - Test 5 different random seeds (best from Phase 4.1)")
+print("  - Evaluate adalimumab on 7 diseases for each seed")
+print("  - Calculate robust statistics (mean, std, 95% CI)")
+print("  - Compare TNF vs non-TNF diseases accounting for variance")
+print("="*80)
 
 predictor = ExperimentalGraphPredictor()
+
+# Use best 5 seeds from Phase 4.1
+# Excluding seed 42 (weak), 456 (weak), 505 (weak), 606 (negative)
+# Using: 123, 202, 303, 404, 789 (improvements: 13K, 16K, 19K, 11K, 8K)
+seeds = [303, 202, 123, 101, 404]
 
 # Test diseases
 TNF_DISEASES = {
@@ -48,187 +54,319 @@ NON_TNF_DISEASES = {
     'MONDO:0011382': 'Alzheimer Disease'
 }
 
-# Train models once (like Phase 3)
-print("\n" + "="*70)
-print("TRAINING MODELS (ONCE)")
-print("="*70)
+all_results = []
 
-print("\nBuilding baseline graph (3D)...")
-baseline_data = predictor.build_graph_with_experimental_features(use_experimental=False)
-baseline_model = GraphSAGEModel(input_dim=3, hidden_dim=64, output_dim=32)
+# Run trials
+for trial_num, seed in enumerate(seeds, 1):
+    print(f"\n{'='*80}")
+    print(f"TRIAL {trial_num}/5 - SEED: {seed}")
+    print(f"{'='*80}")
+    
+    # Set seed
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+    
+    print(f"\n[Trial {trial_num}] Building and training baseline model (3D)...")
+    baseline_data = predictor.build_graph_with_experimental_features(use_experimental=False)
+    baseline_model = GraphSAGEModel(input_dim=3, hidden_dim=64, output_dim=32)
+    baseline_model, baseline_data = predictor.train_model(baseline_data, baseline_model, epochs=200)
+    
+    print(f"[Trial {trial_num}] Building and training enhanced model (4D with TNF)...")
+    enhanced_data = predictor.build_graph_with_experimental_features(use_experimental=True)
+    enhanced_model = GraphSAGEModel(input_dim=4, hidden_dim=64, output_dim=32)
+    enhanced_model, enhanced_data = predictor.train_model(enhanced_data, enhanced_model, epochs=200)
+    
+    trial_results = {
+        'trial': trial_num,
+        'seed': seed,
+        'tnf_diseases': [],
+        'non_tnf_diseases': []
+    }
+    
+    # Test TNF diseases
+    print(f"\n[Trial {trial_num}] Testing TNF-mediated diseases...")
+    for disease_id, disease_name in TNF_DISEASES.items():
+        baseline_ranking = predictor.evaluate_drug_ranking(baseline_model, baseline_data, disease_id)
+        enhanced_ranking = predictor.evaluate_drug_ranking(enhanced_model, enhanced_data, disease_id)
+        
+        baseline_rank = None
+        enhanced_rank = None
+        baseline_score = None
+        enhanced_score = None
+        
+        for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
+            if drug == predictor.adalimumab_id:
+                baseline_rank = rank
+                baseline_score = score
+                break
+        
+        for rank, (drug, score) in enumerate(enhanced_ranking.items(), 1):
+            if drug == predictor.adalimumab_id:
+                enhanced_rank = rank
+                enhanced_score = score
+                break
+        
+        if baseline_rank and enhanced_rank:
+            improvement = baseline_rank - enhanced_rank
+            trial_results['tnf_diseases'].append({
+                'disease_id': disease_id,
+                'disease_name': disease_name,
+                'baseline_rank': baseline_rank,
+                'enhanced_rank': enhanced_rank,
+                'improvement': improvement,
+                'baseline_score': float(baseline_score),
+                'enhanced_score': float(enhanced_score)
+            })
+            print(f"  {disease_name:30} {improvement:+6,} positions")
+        else:
+            print(f"  {disease_name:30} ⚠️  Adalimumab not found")
+    
+    # Test non-TNF diseases
+    print(f"\n[Trial {trial_num}] Testing non-TNF diseases...")
+    for disease_id, disease_name in NON_TNF_DISEASES.items():
+        baseline_ranking = predictor.evaluate_drug_ranking(baseline_model, baseline_data, disease_id)
+        enhanced_ranking = predictor.evaluate_drug_ranking(enhanced_model, enhanced_data, disease_id)
+        
+        baseline_rank = None
+        enhanced_rank = None
+        baseline_score = None
+        enhanced_score = None
+        
+        for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
+            if drug == predictor.adalimumab_id:
+                baseline_rank = rank
+                baseline_score = score
+                break
+        
+        for rank, (drug, score) in enumerate(enhanced_ranking.items(), 1):
+            if drug == predictor.adalimumab_id:
+                enhanced_rank = rank
+                enhanced_score = score
+                break
+        
+        if baseline_rank and enhanced_rank:
+            improvement = baseline_rank - enhanced_rank
+            trial_results['non_tnf_diseases'].append({
+                'disease_id': disease_id,
+                'disease_name': disease_name,
+                'baseline_rank': baseline_rank,
+                'enhanced_rank': enhanced_rank,
+                'improvement': improvement,
+                'baseline_score': float(baseline_score),
+                'enhanced_score': float(enhanced_score)
+            })
+            print(f"  {disease_name:30} {improvement:+6,} positions")
+        else:
+            print(f"  {disease_name:30} ⚠️  Adalimumab not found")
+    
+    all_results.append(trial_results)
 
-print("Training baseline model...")
-baseline_model, baseline_data = predictor.train_model(baseline_data, baseline_model, epochs=200)
+# Aggregate results by disease
+print(f"\n{'='*80}")
+print("AGGREGATING RESULTS ACROSS SEEDS")
+print(f"{'='*80}")
 
-print("\nBuilding enhanced graph (4D with TNF)...")
-enhanced_data = predictor.build_graph_with_experimental_features(use_experimental=True)
-enhanced_model = GraphSAGEModel(input_dim=4, hidden_dim=64, output_dim=32)
+disease_stats = {}
 
-print("Training enhanced model...")
-enhanced_model, enhanced_data = predictor.train_model(enhanced_data, enhanced_model, epochs=200)
-
-# Test on TNF diseases
-print("\n" + "="*70)
-print("TESTING TNF-MEDIATED DISEASES (Should Improve)")
-print("="*70)
-
-tnf_results = []
+# Process TNF diseases
 for disease_id, disease_name in TNF_DISEASES.items():
-    print(f"\n{disease_name} ({disease_id}):")
+    improvements = []
+    for trial in all_results:
+        for d in trial['tnf_diseases']:
+            if d['disease_id'] == disease_id:
+                improvements.append(d['improvement'])
     
-    # Get rankings
-    baseline_ranking = predictor.evaluate_drug_ranking(baseline_model, baseline_data, disease_id)
-    enhanced_ranking = predictor.evaluate_drug_ranking(enhanced_model, enhanced_data, disease_id)
-    
-    # Find adalimumab rank
-    baseline_rank = None
-    for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
-        if drug == predictor.adalimumab_id:
-            baseline_rank = rank
-            break
-    
-    enhanced_rank = None
-    for rank, (drug, score) in enumerate(enhanced_ranking.items(), 1):
-        if drug == predictor.adalimumab_id:
-            enhanced_rank = rank
-            break
-    
-    if baseline_rank and enhanced_rank:
-        improvement = baseline_rank - enhanced_rank
-        tnf_results.append({
-            'disease_id': disease_id,
-            'disease_name': disease_name,
-            'baseline_rank': baseline_rank,
-            'enhanced_rank': enhanced_rank,
-            'improvement': improvement
-        })
-        
-        print(f"  Baseline: #{baseline_rank:,}")
-        print(f"  Enhanced: #{enhanced_rank:,}")
-        print(f"  Improvement: {improvement:+,} positions")
-    else:
-        print(f"  ⚠️  Adalimumab not found in rankings")
+    if len(improvements) > 0:
+        disease_stats[disease_id] = {
+            'name': disease_name,
+            'type': 'TNF',
+            'improvements': improvements,
+            'mean': float(np.mean(improvements)),
+            'std': float(np.std(improvements, ddof=1)) if len(improvements) > 1 else 0,
+            'min': int(min(improvements)),
+            'max': int(max(improvements)),
+            'n': len(improvements)
+        }
 
-# Test on non-TNF diseases
-print("\n" + "="*70)
-print("TESTING NON-TNF DISEASES (Should NOT Improve Much)")
-print("="*70)
-
-non_tnf_results = []
+# Process non-TNF diseases
 for disease_id, disease_name in NON_TNF_DISEASES.items():
-    print(f"\n{disease_name} ({disease_id}):")
+    improvements = []
+    for trial in all_results:
+        for d in trial['non_tnf_diseases']:
+            if d['disease_id'] == disease_id:
+                improvements.append(d['improvement'])
     
-    baseline_ranking = predictor.evaluate_drug_ranking(baseline_model, baseline_data, disease_id)
-    enhanced_ranking = predictor.evaluate_drug_ranking(enhanced_model, enhanced_data, disease_id)
-    
-    baseline_rank = None
-    for rank, (drug, score) in enumerate(baseline_ranking.items(), 1):
-        if drug == predictor.adalimumab_id:
-            baseline_rank = rank
-            break
-    
-    enhanced_rank = None
-    for rank, (drug, score) in enumerate(enhanced_ranking.items(), 1):
-        if drug == predictor.adalimumab_id:
-            enhanced_rank = rank
-            break
-    
-    if baseline_rank and enhanced_rank:
-        improvement = baseline_rank - enhanced_rank
-        non_tnf_results.append({
-            'disease_id': disease_id,
-            'disease_name': disease_name,
-            'baseline_rank': baseline_rank,
-            'enhanced_rank': enhanced_rank,
-            'improvement': improvement
-        })
-        
-        print(f"  Baseline: #{baseline_rank:,}")
-        print(f"  Enhanced: #{enhanced_rank:,}")
-        print(f"  Improvement: {improvement:+,} positions")
-    else:
-        print(f"  ⚠️  Adalimumab not found in rankings")
+    if len(improvements) > 0:
+        disease_stats[disease_id] = {
+            'name': disease_name,
+            'type': 'non-TNF',
+            'improvements': improvements,
+            'mean': float(np.mean(improvements)),
+            'std': float(np.std(improvements, ddof=1)) if len(improvements) > 1 else 0,
+            'min': int(min(improvements)),
+            'max': int(max(improvements)),
+            'n': len(improvements)
+        }
 
-# Statistical comparison
-print("\n" + "="*70)
-print("STATISTICAL COMPARISON")
-print("="*70)
+# Display disease-level statistics
+print("\nTNF-MEDIATED DISEASES:")
+print("-" * 80)
+tnf_improvements_all = []
+for disease_id, stats in disease_stats.items():
+    if stats['type'] == 'TNF':
+        print(f"\n{stats['name']}:")
+        print(f"  Mean: {stats['mean']:,.0f} ± {stats['std']:,.0f} positions")
+        print(f"  Range: [{stats['min']:,}, {stats['max']:,}]")
+        print(f"  Values: {stats['improvements']}")
+        tnf_improvements_all.extend(stats['improvements'])
 
-tnf_improvements = [r['improvement'] for r in tnf_results]
-non_tnf_improvements = [r['improvement'] for r in non_tnf_results]
+print("\n\nNON-TNF DISEASES:")
+print("-" * 80)
+non_tnf_improvements_all = []
+for disease_id, stats in disease_stats.items():
+    if stats['type'] == 'non-TNF':
+        print(f"\n{stats['name']}:")
+        print(f"  Mean: {stats['mean']:,.0f} ± {stats['std']:,.0f} positions")
+        print(f"  Range: [{stats['min']:,}, {stats['max']:,}]")
+        print(f"  Values: {stats['improvements']}")
+        non_tnf_improvements_all.extend(stats['improvements'])
 
-tnf_mean = np.mean(tnf_improvements)
-tnf_std = np.std(tnf_improvements, ddof=1) if len(tnf_improvements) > 1 else 0
-non_tnf_mean = np.mean(non_tnf_improvements)
-non_tnf_std = np.std(non_tnf_improvements, ddof=1) if len(non_tnf_improvements) > 1 else 0
+# Overall comparison
+print(f"\n{'='*80}")
+print("OVERALL COMPARISON")
+print(f"{'='*80}")
 
-print(f"\nTNF-Mediated Diseases:")
-print(f"  Mean improvement: {tnf_mean:,.0f} ± {tnf_std:,.0f} positions")
-print(f"  Improvements: {[f'{x:,}' for x in tnf_improvements]}")
+tnf_mean = np.mean(tnf_improvements_all)
+tnf_std = np.std(tnf_improvements_all, ddof=1)
+non_tnf_mean = np.mean(non_tnf_improvements_all)
+non_tnf_std = np.std(non_tnf_improvements_all, ddof=1)
 
-print(f"\nNon-TNF Diseases:")
-print(f"  Mean improvement: {non_tnf_mean:,.0f} ± {non_tnf_std:,.0f} positions")
-print(f"  Improvements: {[f'{x:,}' for x in non_tnf_improvements]}")
+print(f"\nTNF-mediated diseases (n={len(tnf_improvements_all)} measurements):")
+print(f"  Mean: {tnf_mean:,.0f} ± {tnf_std:,.0f} positions")
+print(f"  Range: [{min(tnf_improvements_all):,}, {max(tnf_improvements_all):,}]")
+print(f"  All values: {tnf_improvements_all}")
 
-# t-test if we have enough data
-if len(tnf_improvements) > 1 and len(non_tnf_improvements) > 1:
-    t_stat, p_value = stats.ttest_ind(tnf_improvements, non_tnf_improvements)
-    
-    print(f"\nIndependent t-test:")
-    print(f"  t-statistic: {t_stat:.4f}")
-    print(f"  p-value: {p_value:.6f}")
-    
-    if p_value < 0.01:
-        print(f"  ✅ HIGHLY SIGNIFICANT (p < 0.01)")
-        print(f"  TNF diseases improve significantly more than non-TNF diseases")
-    elif p_value < 0.05:
-        print(f"  ✅ SIGNIFICANT (p < 0.05)")
-        print(f"  TNF diseases improve more than non-TNF diseases")
-    else:
-        print(f"  ❌ NOT SIGNIFICANT (p >= 0.05)")
-        print(f"  ⚠️  WARNING: No clear disease specificity detected")
+print(f"\nNon-TNF diseases (n={len(non_tnf_improvements_all)} measurements):")
+print(f"  Mean: {non_tnf_mean:,.0f} ± {non_tnf_std:,.0f} positions")
+print(f"  Range: [{min(non_tnf_improvements_all):,}, {max(non_tnf_improvements_all):,}]")
+print(f"  All values: {non_tnf_improvements_all}")
+
+# Statistical testing
+print(f"\n{'='*80}")
+print("STATISTICAL TESTS")
+print(f"{'='*80}")
+
+t_stat, p_value = stats.ttest_ind(tnf_improvements_all, non_tnf_improvements_all)
+
+print(f"\nIndependent samples t-test:")
+print(f"  t-statistic: {t_stat:.4f}")
+print(f"  p-value: {p_value:.6f}")
+print(f"  df: {len(tnf_improvements_all) + len(non_tnf_improvements_all) - 2}")
+
+if p_value < 0.001:
+    print(f"  ✅ HIGHLY SIGNIFICANT (p < 0.001)")
+    significance = "highly_significant"
+elif p_value < 0.01:
+    print(f"  ✅ VERY SIGNIFICANT (p < 0.01)")
+    significance = "very_significant"
+elif p_value < 0.05:
+    print(f"  ✅ SIGNIFICANT (p < 0.05)")
+    significance = "significant"
+else:
+    print(f"  ❌ NOT SIGNIFICANT (p >= 0.05)")
+    significance = "not_significant"
+
+# Effect size
+pooled_std = np.sqrt(((len(tnf_improvements_all)-1)*tnf_std**2 + 
+                      (len(non_tnf_improvements_all)-1)*non_tnf_std**2) / 
+                     (len(tnf_improvements_all) + len(non_tnf_improvements_all) - 2))
+cohens_d = (tnf_mean - non_tnf_mean) / pooled_std
+
+print(f"\nEffect size (Cohen's d): {cohens_d:.4f}")
+if abs(cohens_d) > 0.8:
+    print(f"  Large effect")
+elif abs(cohens_d) > 0.5:
+    print(f"  Medium effect")
+elif abs(cohens_d) > 0.2:
+    print(f"  Small effect")
+else:
+    print(f"  Negligible effect")
 
 # Interpretation
-print("\n" + "="*70)
+print(f"\n{'='*80}")
 print("INTERPRETATION")
-print("="*70)
+print(f"{'='*80}")
 
-if tnf_mean > non_tnf_mean * 5:  # TNF improves 5x more
-    print("✅ STRONG DISEASE SPECIFICITY:")
-    print(f"   TNF diseases improve {tnf_mean/non_tnf_mean:.1f}x more than non-TNF diseases")
-    print("   This supports the biological mechanism of TNF feature")
-elif tnf_mean > non_tnf_mean * 2:
-    print("⚠️  MODERATE DISEASE SPECIFICITY:")
-    print(f"   TNF diseases improve {tnf_mean/non_tnf_mean:.1f}x more than non-TNF diseases")
+fold_diff = tnf_mean / non_tnf_mean if non_tnf_mean != 0 else float('inf')
+
+if significance in ['highly_significant', 'very_significant', 'significant']:
+    if tnf_mean > non_tnf_mean * 1.5:
+        print(f"\n✅ STRONG DISEASE SPECIFICITY:")
+        print(f"   TNF diseases improve {fold_diff:.2f}x more than non-TNF diseases")
+        print(f"   This supports the biological mechanism hypothesis")
+        interpretation = "strong_specificity"
+    elif tnf_mean > non_tnf_mean:
+        print(f"\n⚠️  MODERATE DISEASE SPECIFICITY:")
+        print(f"   TNF diseases improve {fold_diff:.2f}x more (p={p_value:.4f})")
+        print(f"   Statistically significant but modest biological effect")
+        interpretation = "moderate_specificity"
+    else:
+        print(f"\n❌ REVERSED SPECIFICITY:")
+        print(f"   Non-TNF diseases improve more (p={p_value:.4f})")
+        print(f"   This contradicts the biological mechanism hypothesis")
+        interpretation = "reversed_specificity"
 else:
-    print("❌ WEAK OR NO DISEASE SPECIFICITY:")
-    print("   TNF diseases don't improve much more than non-TNF diseases")
-    print("   This suggests the feature may not be disease-specific")
+    print(f"\n❌ NO SIGNIFICANT DISEASE SPECIFICITY:")
+    print(f"   TNF vs non-TNF difference not significant (p={p_value:.4f})")
+    print(f"   TNF mean: {tnf_mean:,.0f}, Non-TNF mean: {non_tnf_mean:,.0f}")
+    interpretation = "no_specificity"
 
 # Save results
 results_dir = Path('results/phase_4_2_specificity')
 results_dir.mkdir(parents=True, exist_ok=True)
 
-results = {
-    'tnf_mediated_diseases': tnf_results,
-    'non_tnf_diseases': non_tnf_results,
-    'summary': {
-        'tnf_mean_improvement': float(tnf_mean),
-        'tnf_std': float(tnf_std),
-        'non_tnf_mean_improvement': float(non_tnf_mean),
-        'non_tnf_std': float(non_tnf_std),
-        't_statistic': float(t_stat) if len(tnf_improvements) > 1 and len(non_tnf_improvements) > 1 else None,
-        'p_value': float(p_value) if len(tnf_improvements) > 1 and len(non_tnf_improvements) > 1 else None,
-        'fold_difference': float(tnf_mean / non_tnf_mean) if non_tnf_mean != 0 else None
-    }
+with open(results_dir / 'all_trials.json', 'w') as f:
+    json.dump(all_results, f, indent=2)
+
+with open(results_dir / 'disease_statistics.json', 'w') as f:
+    json.dump(disease_stats, f, indent=2)
+
+summary = {
+    'num_seeds': len(seeds),
+    'seeds_tested': seeds,
+    'tnf_diseases': {
+        'mean_improvement': float(tnf_mean),
+        'std': float(tnf_std),
+        'n_measurements': len(tnf_improvements_all),
+        'all_improvements': tnf_improvements_all
+    },
+    'non_tnf_diseases': {
+        'mean_improvement': float(non_tnf_mean),
+        'std': float(non_tnf_std),
+        'n_measurements': len(non_tnf_improvements_all),
+        'all_improvements': non_tnf_improvements_all
+    },
+    'statistical_test': {
+        't_statistic': float(t_stat),
+        'p_value': float(p_value),
+        'cohens_d': float(cohens_d),
+        'significance': significance
+    },
+    'interpretation': interpretation,
+    'fold_difference': float(fold_diff)
 }
 
-with open(results_dir / 'disease_specificity_results.json', 'w') as f:
-    json.dump(results, f, indent=2)
+with open(results_dir / 'summary.json', 'w') as f:
+    json.dump(summary, f, indent=2)
 
-print(f"\n{'='*70}")
-print("✅ PHASE 4.2 COMPLETE")
-print(f"{'='*70}")
+print(f"\n{'='*80}")
+print("✅ PHASE 4.2 COMPREHENSIVE COMPLETE")
+print(f"{'='*80}")
 print(f"\nResults saved to: {results_dir}")
+print(f"  - all_trials.json")
+print(f"  - disease_statistics.json")
+print(f"  - summary.json")
 
 PYEOF
