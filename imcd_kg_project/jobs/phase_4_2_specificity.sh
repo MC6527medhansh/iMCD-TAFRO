@@ -37,7 +37,7 @@ predictor = ExperimentalGraphPredictor()
 
 # Use best 5 seeds from Phase 4.1
 # Excluding seed 42 (weak), 456 (weak), 505 (weak), 606 (negative)
-# Using: 123, 202, 303, 404, 789 (improvements: 13K, 16K, 19K, 11K, 8K)
+# Using: 123, 202, 303, 404, 101
 seeds = [303, 202, 123, 101, 404]
 
 # Test diseases
@@ -214,24 +214,24 @@ for disease_id, disease_name in NON_TNF_DISEASES.items():
 print("\nTNF-MEDIATED DISEASES:")
 print("-" * 80)
 tnf_improvements_all = []
-for disease_id, stats in disease_stats.items():
-    if stats['type'] == 'TNF':
-        print(f"\n{stats['name']}:")
-        print(f"  Mean: {stats['mean']:,.0f} ± {stats['std']:,.0f} positions")
-        print(f"  Range: [{stats['min']:,}, {stats['max']:,}]")
-        print(f"  Values: {stats['improvements']}")
-        tnf_improvements_all.extend(stats['improvements'])
+for disease_id, drec in disease_stats.items():
+    if drec['type'] == 'TNF':
+        print(f"\n{drec['name']}:")
+        print(f"  Mean: {drec['mean']:,.0f} ± {drec['std']:,.0f} positions")
+        print(f"  Range: [{drec['min']:,}, {drec['max']:,}]")
+        print(f"  Values: {drec['improvements']}")
+        tnf_improvements_all.extend(drec['improvements'])
 
 print("\n\nNON-TNF DISEASES:")
 print("-" * 80)
 non_tnf_improvements_all = []
-for disease_id, stats in disease_stats.items():
-    if stats['type'] == 'non-TNF':
-        print(f"\n{stats['name']}:")
-        print(f"  Mean: {stats['mean']:,.0f} ± {stats['std']:,.0f} positions")
-        print(f"  Range: [{stats['min']:,}, {stats['max']:,}]")
-        print(f"  Values: {stats['improvements']}")
-        non_tnf_improvements_all.extend(stats['improvements'])
+for disease_id, drec in disease_stats.items():
+    if drec['type'] == 'non-TNF':
+        print(f"\n{drec['name']}:")
+        print(f"  Mean: {drec['mean']:,.0f} ± {drec['std']:,.0f} positions")
+        print(f"  Range: [{drec['min']:,}, {drec['max']:,}]")
+        print(f"  Values: {drec['improvements']}")
+        non_tnf_improvements_all.extend(drec['improvements'])
 
 # Overall comparison
 print(f"\n{'='*80}")
