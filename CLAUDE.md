@@ -175,33 +175,73 @@ Log2 transform (4.94) is always safer and more appropriate.
 This data is the direct input to the fine-tuning pipeline. Without it we
 only have 1 gene (TNF, log2=4.94) which is too thin for robust fine-tuning.
 
+### New Data Available (March 2026)
+
+**File:** `imcd_kg_project/data/experimental/iMCD_TAFRO_cell_specific_tstats.csv`
+**Diagram:** `imcd_kg_project/data/experimental/Screenshot 2026-03-12 at 1.34.14 AM.png`
+
+CSV structure:
+- 12,500 genes × 5 cell types: B cells, ILC, Megakaryocytes/platelets, Monocytes, T cells
+- Values are t-statistics from scRNA-seq (iMCD patients vs healthy)
+- T-stats are NOT bounded [-10,+10] — range up to 96.73 (FLT3, Monocytes)
+- Must normalize before using as edge weights
+
+**TNF discrepancy — important:**
+```
+TNF: B cells=0, ILC=0, Megakaryocytes=0, Monocytes=32.22, T cells=2.91
+```
+Paper says TNF upregulated in naive CD4+ T cells (31x), but this CSV shows dominant
+TNF signal in Monocytes (32.22), T cells only 2.91. Likely because "T cells" is a
+broad aggregate category diluting the naive CD4+ T cell signal. Flag to Prof. Singh
+— ask if finer granularity (naive CD4+ T cell breakdown) is available.
+
+**Professor's diagram (what it actually shows):**
+NOT simple protein duplication. It shows (cell_type, gene) composite intermediate
+nodes on the left (e.g., "T cell TNF", "Monocyte IL6") that connect INTO canonical
+protein nodes (TNF, IL6, STAT3), which keep all existing edges.
+Structure: TAFRO → [cell_type|gene node] → canonical protein → drug
+Drug-protein connectivity is PRESERVED. Composite nodes are new and need
+initialization (start as copy of canonical protein embedding).
+
+**Non-zero genes per cell type:**
+- B cells: 5,780 non-zero, max t-stat=52.70
+- ILC: 7,178 non-zero, max=37.87
+- Megakaryocytes/platelets: 1,310 non-zero (sparse), max=30.81
+- Monocytes: 9,487 non-zero, max=96.73
+- T cells: 11,711 non-zero, max=66.64
+
 ### What CAN be built now (Phase 5.2 — not yet implemented)
 
-**Fine-tuning pipeline on iMCD subgraph:**
+**Fine-tuning pipeline on iMCD subgraph (updated with cell-type data):**
 
-Architecture:
-1. Load pre-trained GATConv from base RTX-KG2 training (full_graph.pkl)
-2. Extract iMCD-relevant subgraph (Castleman + k-hop neighborhood)
-3. Attach disease edgelist as weighted edges (log2 fold changes)
-4. Fine-tune using KNOWN Castleman treatments as positive supervision
-   (siltuximab, tocilizumab — NOT adalimumab, which should emerge from
-   the TNF fold-change signal without being explicitly supervised)
-5. Adalimumab should rank higher because TNF edge weight is high,
-   and adalimumab targets TNF — even without being in training pairs
-6. Evaluate: adalimumab rank for Castleman vs rank for non-TNF diseases
+Architecture (professor's composite node design):
+1. Map CSV gene symbols → UniProtKB IDs present in RTX-KG2 (Step 5.2.1)
+2. Select top genes per cell type by t-stat (after normalization)
+3. For each (gene, cell_type) pair: create composite intermediate node
+   e.g., node "TNF|T_cells" sits between Castleman disease and canonical TNF node
+4. Add edges: Castleman → composite_node, weight = normalized t-stat
+5. Add edges: composite_node → canonical_protein, weight = 1.0
+6. Initialize composite node embeddings as copy of canonical protein embedding
+7. Fine-tune on iMCD subgraph with siltuximab + tocilizumab as positive supervision
+8. Adalimumab is evaluation-only — should emerge from the TNF signal
+9. Evaluate: adalimumab rank for Castleman vs non-TNF diseases
 
 **Key design decisions for Phase 5.2:**
-- Use log2 fold change (4.94), not linear (30.7)
-- Supervision signal: siltuximab + tocilizumab as positives (known IL-6 pathway)
-- Adalimumab is evaluation-only — should emerge from fold-change signal
-- Do NOT apply weight noise to structural ontology edges (biolink:subclass_of etc.)
-- Only weight biological interaction edges (gene-disease, gene-drug, PPI)
+- Normalize t-stats (z-score or clip at 99th percentile) before use as weights
+- Use log2 transform if t-stats after normalization still too large
+- Supervision: siltuximab + tocilizumab as positives (known Castleman treatments)
+- Adalimumab NOT in supervision — should emerge from fold-change signal
+- Only weight biological interaction edges, not ontology edges (subclass_of etc.)
+- Composite node init: copy of canonical protein's pre-trained embedding
 
-**What changes when scRNA-seq data arrives:**
-- The edgelist expands from 1 gene (TNF) to potentially 20-50 genes
-- Each gene becomes a weighted edge in the subgraph
-- Fine-tuning has richer signal = more robust rankings
-- Adalimumab's emergence from fold-change becomes more convincing
+**Phase 5.2 subphases:**
+- 5.2.1: Gene symbol → UniProtKB ID mapping (DONE — 21/21 tests pass locally)
+         src/enhanced_kgnn/gene_mapper.py + tests/test_gene_mapper.py
+         Still need: Sockeye coverage run against real full_graph.pkl
+- 5.2.2: Composite node builder (add cell-type nodes to graph) (LOCAL, testable)
+- 5.2.3: T-stat normalization + edge weight assignment (LOCAL, testable)
+- 5.2.4: Fine-tuning loop with subgraph extraction (SOCKEYE)
+- 5.2.5: Evaluation: adalimumab rank, disease specificity test (SOCKEYE)
 
 ### How this connects to Professor Singh's vision
 
