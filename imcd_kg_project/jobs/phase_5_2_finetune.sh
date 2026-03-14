@@ -25,6 +25,7 @@
 #   for non-TNF diseases (diabetes, hypertension, Alzheimer).
 
 module load gcc/9.4.0 miniconda3/4.9.2
+source activate imcd_kg
 
 cd /scratch/st-singha53-1/mchoubey/iMCD-TAFRO/imcd_kg_project
 
@@ -34,7 +35,7 @@ echo "Job ID: $SLURM_JOB_ID"
 echo "Start: $(date)"
 echo "========================================================"
 
-conda run -n imcd_kg python jobs/run_phase_5_2.py
+python jobs/run_phase_5_2.py
 
 echo "========================================================"
 echo "End: $(date)"
