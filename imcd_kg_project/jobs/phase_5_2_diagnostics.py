@@ -28,8 +28,6 @@ CSV_PATH    = Path("data/experimental/iMCD_TAFRO_cell_specific_tstats.csv")
 CASTLEMAN   = "MONDO:0015564"
 TNF         = "UniProtKB:P01375"
 ADALIMUMAB  = "CHEMBL.COMPOUND:CHEMBL1201580"
-SILTUXIMAB  = "CHEMBL.COMPOUND:CHEMBL1615786"
-TOCILIZUMAB = "CHEMBL.COMPOUND:CHEMBL1201823"
 SEP = "=" * 65
 
 print(SEP)
@@ -47,32 +45,48 @@ mapper = GeneMapper(graph_path=GRAPH_PATH)
 mapper.load_graph(nx_graph=G)
 
 # ------------------------------------------------------------------
-# CHECK 1: Supervision drugs
+# CHECK 1: Supervision drugs — search by name, no hardcoded IDs
 # ------------------------------------------------------------------
 print(f"\n{SEP}")
-print("CHECK 1: Supervision drugs")
+print("CHECK 1: Supervision drugs (searched by name in graph)")
 print(SEP)
-for name, uid in [("siltuximab", SILTUXIMAB),
-                  ("tocilizumab", TOCILIZUMAB),
-                  ("adalimumab", ADALIMUMAB)]:
-    in_g = uid in G
-    edge = G.has_edge(uid, CASTLEMAN) if in_g else False
-    label = G.nodes[uid].get("name", "?") if in_g else "NOT IN GRAPH"
-    print(f"  {name:<15} in_graph={str(in_g):<6} "
-          f"edge_to_castleman={str(edge):<6} name='{label}'")
+search_names = ["siltuximab", "tocilizumab", "adalimumab"]
+found_drugs = {}
+for node_id, data in G.nodes(data=True):
+    if not node_id.startswith("CHEMBL.COMPOUND:"):
+        continue
+    node_name = data.get("name", "").lower()
+    for target in search_names:
+        if target in node_name and target not in found_drugs:
+            found_drugs[target] = (node_id, data.get("name", ""))
+
+for target in search_names:
+    if target in found_drugs:
+        uid, label = found_drugs[target]
+        edge_fwd = G.has_edge(uid, CASTLEMAN)
+        edge_rev = G.has_edge(CASTLEMAN, uid)
+        print(f"  {target:<15} FOUND: {uid}")
+        print(f"    name='{label}'  drug->castleman={edge_fwd}  castleman->drug={edge_rev}")
+    else:
+        print(f"  {target:<15} NOT FOUND IN GRAPH")
 
 # ------------------------------------------------------------------
-# CHECK 2: Castleman protein neighbors
+# CHECK 2: Castleman protein neighbors (handles directed graph)
 # ------------------------------------------------------------------
 print(f"\n{SEP}")
 print("CHECK 2: Castleman protein neighbors")
 print(SEP)
-castleman_proteins = [
-    n for n in G.neighbors(CASTLEMAN)
-    if n.startswith("UniProtKB:")
-]
-print(f"  Total protein neighbors: {len(castleman_proteins)}")
-print(f"  TNF is a neighbor:       {TNF in castleman_proteins}")
+if G.is_directed():
+    incoming = [n for n in G.predecessors(CASTLEMAN) if n.startswith("UniProtKB:")]
+    outgoing = [n for n in G.successors(CASTLEMAN) if n.startswith("UniProtKB:")]
+    castleman_proteins = list(set(incoming + outgoing))
+    print(f"  Graph is directed")
+    print(f"  Incoming (protein->Castleman): {len(incoming)}")
+    print(f"  Outgoing (Castleman->protein): {len(outgoing)}")
+else:
+    castleman_proteins = [n for n in G.neighbors(CASTLEMAN) if n.startswith("UniProtKB:")]
+print(f"  Total unique protein neighbors: {len(castleman_proteins)}")
+print(f"  TNF is a neighbor:              {TNF in castleman_proteins}")
 
 # ------------------------------------------------------------------
 # CHECK 3: How many Castleman protein neighbors are in the CSV
