@@ -175,6 +175,17 @@ Log2 transform (4.94) is always safer and more appropriate.
 This data is the direct input to the fine-tuning pipeline. Without it we
 only have 1 gene (TNF, log2=4.94) which is too thin for robust fine-tuning.
 
+### Confirmed CHEMBL IDs (verified by name search in graph)
+- Siltuximab:   CHEMBL.COMPOUND:CHEMBL1743070 (direct edge to Castleman: YES)
+- Tocilizumab:  CHEMBL.COMPOUND:CHEMBL1237022 (direct edge to Castleman: YES)
+- Adalimumab:   CHEMBL.COMPOUND:CHEMBL1201580 (direct edge to Castleman: NO — held out)
+
+### RTX-KG2 Graph Structure (confirmed March 2026)
+- Graph is DIRECTED (DiGraph). G.neighbors() returns only successors.
+  Use G.predecessors() to get incoming edges (e.g. protein->disease).
+- Castleman protein neighbors: 68 (all incoming, 0 outgoing)
+- 51/68 of those neighbors have t-stats in the CSV
+
 ### New Data Available (March 2026)
 
 **File:** `imcd_kg_project/data/experimental/iMCD_TAFRO_cell_specific_tstats.csv`
@@ -237,8 +248,10 @@ Architecture (professor's composite node design):
 **Phase 5.2 subphases:**
 - 5.2.1: Gene symbol → UniProtKB ID mapping (DONE — 21/21 tests pass locally)
          src/enhanced_kgnn/gene_mapper.py + tests/test_gene_mapper.py
-         Still need: Sockeye coverage run against real full_graph.pkl
-- 5.2.2: Composite node builder (add cell-type nodes to graph) (LOCAL, testable)
+- 5.2.2: Composite node builder (DONE — 20/20 tests pass locally)
+         src/enhanced_kgnn/composite_node_builder.py
+         tests/test_composite_node_builder.py
+         Config: min_tstat=2.0, weights normalized to [0.1, 1.0]
 - 5.2.3: T-stat normalization + edge weight assignment (LOCAL, testable)
 - 5.2.4: Fine-tuning loop with subgraph extraction (SOCKEYE)
 - 5.2.5: Evaluation: adalimumab rank, disease specificity test (SOCKEYE)

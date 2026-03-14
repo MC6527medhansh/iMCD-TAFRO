@@ -110,11 +110,25 @@ Check: does adalimumab rank higher for Castleman than for diabetes/hypertension?
    Recommend top 100-200 per cell type (t-stat > some threshold) to keep
    graph manageable.
 
+## Confirmed Facts from Diagnostics (phase_5_2_diagnostics.py)
+- Graph is DIRECTED. Use G.predecessors() for incoming edges.
+- Castleman: 68 protein neighbors (all incoming), 51/68 in CSV
+- Siltuximab CHEMBL1743070: direct edge to Castleman = True
+- Tocilizumab CHEMBL1237022: direct edge to Castleman = True
+- Adalimumab CHEMBL1201580: direct edge to Castleman = False (held out)
+- Key path: Adalimumab->TNF->Castleman intact
+- TNF t-stats: Monocytes=32.22, T cells=2.91
+- Strong signals: NFKBIA, CD79A, IRF7, STAT1, CR1, VEGFA, IL1B, STAT3
+
 ## Current Status
 - [x] 5.2.1 Gene mapping — COMPLETE (local, 21/21 tests passing)
       Files: src/enhanced_kgnn/gene_mapper.py, tests/test_gene_mapper.py
-      Next: run coverage check script on Sockeye against real full_graph.pkl
-- [ ] 5.2.2 Composite node builder — NOT STARTED
+- [x] Diagnostics — COMPLETE (Sockeye, all 6 checks passed)
+      File: jobs/phase_5_2_diagnostics.py
+- [x] 5.2.2 Composite node builder — COMPLETE (local, 20/20 tests passing)
+      Files: src/enhanced_kgnn/composite_node_builder.py
+             tests/test_composite_node_builder.py
+      Config: min_tstat=2.0, normalization clips at 99th pct, scales to [0.1,1.0]
 - [ ] 5.2.3 T-stat normalization — NOT STARTED
 - [ ] 5.2.4 Fine-tuning loop — NOT STARTED
 - [ ] 5.2.5 Evaluation — NOT STARTED
