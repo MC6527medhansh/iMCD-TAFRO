@@ -320,7 +320,12 @@ class GATPredictor:
 
             src_idx = self.entity_to_idx[source]
             tgt_idx = self.entity_to_idx[target]
-            weight = default_weight
+
+            # Use edge's own 'weight' attribute if present (e.g. composite node
+            # edges added by CompositeNodeBuilder carry normalized t-stat weights).
+            # Fall back to default_weight (1.0) for all other edges.
+            edge_data = self.nx_graph.edges[source, target]
+            weight = edge_data.get("weight", default_weight)
 
             if disease_edge_weights:
                 # Disease -> protein edge (forward direction in nx_graph)

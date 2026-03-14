@@ -129,6 +129,10 @@ Check: does adalimumab rank higher for Castleman than for diabetes/hypertension?
       Files: src/enhanced_kgnn/composite_node_builder.py
              tests/test_composite_node_builder.py
       Config: min_tstat=2.0, normalization clips at 99th pct, scales to [0.1,1.0]
-- [ ] 5.2.3 T-stat normalization — NOT STARTED
-- [ ] 5.2.4 Fine-tuning loop — NOT STARTED
-- [ ] 5.2.5 Evaluation — NOT STARTED
+- [x] 5.2.3 T-stat normalization — DONE (built into composite_node_builder.py)
+- [x] 5.2.4 Fine-tuning loop — COMPLETE (local, 4/4 tests passing)
+      Files: src/enhanced_kgnn/finetuner.py, tests/test_finetuner.py
+             jobs/phase_5_2_finetune.sh, jobs/run_phase_5_2.py
+      Also: gat_predictor.py patched to read edge 'weight' attributes
+      Next: commit, git pull on Sockeye, sbatch jobs/phase_5_2_finetune.sh
+- [ ] 5.2.5 Evaluation — runs automatically inside finetuner.py

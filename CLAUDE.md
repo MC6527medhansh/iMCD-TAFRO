@@ -249,9 +249,13 @@ Architecture (professor's composite node design):
 - 5.2.1: Gene symbol → UniProtKB ID mapping (DONE — 21/21 tests pass locally)
          src/enhanced_kgnn/gene_mapper.py + tests/test_gene_mapper.py
 - 5.2.2: Composite node builder (DONE — 20/20 tests pass locally)
-         src/enhanced_kgnn/composite_node_builder.py
-         tests/test_composite_node_builder.py
-         Config: min_tstat=2.0, weights normalized to [0.1, 1.0]
+         src/enhanced_kgnn/composite_node_builder.py + tests/
+- 5.2.3: T-stat normalization (DONE — built into composite_node_builder.py)
+- 5.2.4: Fine-tuning loop (DONE — 4/4 tests pass locally)
+         src/enhanced_kgnn/finetuner.py + tests/test_finetuner.py
+         jobs/phase_5_2_finetune.sh + jobs/run_phase_5_2.py
+         gat_predictor.py: patched to read edge 'weight' attrs from graph
+         NEXT: sbatch jobs/phase_5_2_finetune.sh on Sockeye
 - 5.2.3: T-stat normalization + edge weight assignment (LOCAL, testable)
 - 5.2.4: Fine-tuning loop with subgraph extraction (SOCKEYE)
 - 5.2.5: Evaluation: adalimumab rank, disease specificity test (SOCKEYE)
