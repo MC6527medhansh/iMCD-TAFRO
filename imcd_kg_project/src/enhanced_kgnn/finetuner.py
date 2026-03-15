@@ -124,6 +124,7 @@ class CompositeFinetuner:
         epochs: int = 200,
         lr: float = 0.01,
         results_dir: Optional[Path] = None,
+        cell_types: Optional[List[str]] = None,
     ) -> FinetuneResult:
         """
         Full pipeline: build graph -> train -> evaluate, across multiple seeds.
@@ -135,6 +136,9 @@ class CompositeFinetuner:
             epochs:       Training epochs per seed
             lr:           Learning rate
             results_dir:  If provided, saves per-seed JSON results here
+            cell_types:   Optional list of cell type column names to use.
+                          None (default) uses all five cell types.
+                          Example: ["T cells"] for a T-cells-only experiment.
 
         Returns:
             FinetuneResult with aggregated rankings across seeds
@@ -167,7 +171,7 @@ class CompositeFinetuner:
             castleman_id=self.CASTLEMAN_ID,
             min_tstat=self.min_tstat,
         )
-        build_result = builder.build(nx_graph, mapper, csv_path)
+        build_result = builder.build(nx_graph, mapper, csv_path, cell_types=cell_types)
         augmented_graph = build_result.graph
 
         logger.info(build_result.summary())
@@ -332,6 +336,7 @@ class CompositeFinetuner:
                 "disease_specific": bool(disease_specific) if disease_specific is not None else None,
                 "n_composite_nodes": build_result.n_composite_nodes,
                 "min_tstat": self.min_tstat,
+                "cell_types": cell_types,
                 "seeds": seeds,
                 "epochs": epochs,
                 "seed_results": [

@@ -79,10 +79,12 @@ imcd_kg_project/
     test_composite_node_builder.py     — 20 tests (Phase 5.2)
     test_finetuner.py                  — 4 tests (Phase 5.2)
   jobs/
+    phase_5_3_celltype.sh              — Phase 5.3 SLURM job (NEXT to run)
+    run_phase_5_3.py                   — entry point for Phase 5.3 (6 experiments)
     phase_5_2_finetune.sh              — Phase 5.2 SLURM job (COMPLETE — DISEASE-SPECIFIC)
+    run_phase_5_2.py                   — entry point for Phase 5.2 job
     phase_5_1_gat_validation.sh        — Phase 5.1 SLURM job (completed, failed)
     phase_4_2_specificity.sh           — Phase 4.2 SLURM job (completed, failed)
-    run_phase_5_2.py                   — entry point for Phase 5.2 job
   data/
     experimental/
       iMCD_TAFRO_cell_specific_tstats.csv  — 12,500 genes × 5 cell types (Prof. Singh's data)
@@ -212,7 +214,31 @@ just a weight on an existing edge. The model routes through (TNF|Monocytes) and
 (TNF|T_cells) composite nodes, which carry normalized t-stat weights — forcing it
 to learn that high-t-stat paths correlate with Castleman drug relevance.
 
-### What's next
+### Phase 5.3: Per-Cell-Type Composite Node Experiments (IN PROGRESS — local complete)
+
+**Two changes from Phase 5.2, driven by Prof. Singh:**
+
+1. ALL ~10,900 matched genes from CSV are used (Phase 5.2 used only 68 direct
+   Castleman neighbors). The t-stat IS the evidence of relevance. A pre-existing
+   graph edge to Castleman is no longer required.
+
+2. 6 experiments: combined (all cell types, seeds=[42,123,303]) + one per cell
+   type (B cells, ILC, Megakaryocytes/platelets, Monocytes, T cells; seeds=[42]).
+
+**Files created/changed:**
+- `src/enhanced_kgnn/composite_node_builder.py` — `_load_tstats_all_genes` replaces
+  `_load_tstats_for_neighbors`; `build()` now takes `cell_types` param
+- `src/enhanced_kgnn/finetuner.py` — `run()` now takes `cell_types` param
+- `jobs/run_phase_5_3.py` — runs 6 experiments, saves to `results/phase_5_3/`
+- `jobs/phase_5_3_celltype.sh` — SLURM job (48h, 64GB)
+- `tests/test_composite_node_builder.py` — 22 tests (2 new), all passing
+- `plans/phase_5_3_plan.md` — full plan
+
+**Local test status: 47/47 passing**
+
+**Next: commit, git pull on Sockeye, sbatch jobs/phase_5_3_celltype.sh**
+
+### What's next (after Phase 5.3 results)
 
 **Immediate next step: discuss Phase 5.2 results with Professor Singh.**
 

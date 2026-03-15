@@ -4,42 +4,42 @@ composite_node_builder.py
 Purpose: Insert cell-type-specific composite nodes into the RTX-KG2 graph.
 
 What this does (plain English):
-  The existing graph has direct edges: protein -> Castleman disease.
-  This module adds intermediate nodes between them, one per
-  (gene, cell_type) pair that has a strong t-stat signal (>= min_tstat).
+  For every gene in the scRNA-seq CSV that maps to a protein node in the
+  graph, this module creates one composite intermediate node per cell type
+  with a t-stat >= min_tstat.
 
   Before:
-    TNF  ->  Castleman
+    Castleman  <-  TNF  <-  Adalimumab
 
-  After:
-    TNF  ->  [TNF|Monocytes]  ->  Castleman
-    TNF  ->  [TNF|T_cells]    ->  Castleman
+  After (with composite nodes):
+    Castleman  <-  [TNF|Monocytes]  <-  TNF  <-  Adalimumab
+    Castleman  <-  [TNF|T_cells]    <-  TNF
 
-  The composite node [TNF|Monocytes] carries the biological meaning:
-  "TNF as expressed specifically in Monocytes in iMCD patients."
+  Note: the original TNF -> Castleman edge is kept. The composite nodes
+  add NEW paths, they do not replace anything.
 
-  The t-stat from the scRNA-seq CSV becomes the edge weight on the
-  Castleman -> composite node edge. This weight is normalized to
-  [0.1, 1.0] so the attention mechanism can use it without numerical
-  instability.
+  Previously (Phase 5.2) we only created composite nodes for genes that
+  were ALREADY direct neighbors of Castleman in the graph. That gave 49
+  composite nodes.
+
+  Now we use ALL ~10,900 genes in the CSV that map to the graph. This
+  gives Castleman connections to thousands of cell-type-specific proteins
+  instead of just 49. The t-stat IS the evidence of relevance — we do not
+  need the graph to have pre-existing Castleman edges for those genes.
 
   Composite node IDs look like: "COMPOSITE:TNF|Monocytes"
   These nodes get node feature [0, 0, 1] (same as other proteins).
 
-Why this is better than Phase 5.1 edge weights:
-  Phase 5.1 just changed the weight on the existing TNF->Castleman edge.
-  The model was trained on uniform weights so it ignored the signal.
-
-  Here, we add a STRUCTURAL change — a new node in the graph path.
-  The model must route through the composite node to reach the protein.
-  Fine-tuning will teach the model that high-weight paths (high t-stat)
-  correlate with drug relevance, using siltuximab/tocilizumab as supervision.
+Cell-type filtering:
+  Pass cell_types=["T cells"] to build() to create composite nodes for
+  only one cell type. This is used for per-cell-type experiments.
+  Default (cell_types=None) uses all five cell types.
 
 Normalization strategy:
-  Raw t-stats range from 0 to ~96 in this dataset. Feeding these directly
-  into GATConv attention would dominate the softmax. We clip at the 99th
-  percentile (removes extreme outliers) then min-max scale to [0.1, 1.0].
-  The 0.1 floor ensures no edge weight is zero (zero weight = invisible edge).
+  Raw t-stats range from 0 to ~96. Feeding these directly into GATConv
+  attention would dominate the softmax. We clip at the 99th percentile
+  then min-max scale to [0.1, 1.0]. The 0.1 floor ensures no edge weight
+  is zero (zero weight = invisible edge).
 """
 
 import csv
@@ -123,26 +123,33 @@ class CompositeNodeBuilder:
         nx_graph: nx.DiGraph,
         gene_mapper,
         csv_path: Path,
+        cell_types: Optional[List[str]] = None,
     ) -> BuildResult:
         """
         Build the composite-node-augmented graph.
 
         Steps:
-          1. Find Castleman's protein neighbors (incoming edges only,
-             because the graph is directed: protein -> Castleman)
-          2. Load t-stats from CSV for those neighbors
-          3. Filter by min_tstat
-          4. Normalize t-stats to [0.1, 1.0]
+          1. Load t-stats for ALL genes in the CSV that map to the graph.
+             (Phase 5.2 only used Castleman's 68 direct neighbors.
+              Now we use all ~10,900 matched genes — the t-stat IS the
+              evidence of relevance, we do not need a pre-existing edge.)
+          2. Optionally restrict to specific cell types (for per-cell-type
+             experiments). Default None uses all five cell types.
+          3. Filter by min_tstat.
+          4. Normalize t-stats to [0.1, 1.0].
           5. For each (gene, cell_type) pair, insert a composite node
              with two new edges:
                Castleman -> composite (weight = norm_tstat)
                composite -> canonical_protein (weight = 1.0)
-          6. Return modified graph + metadata
+          6. Return modified graph + metadata.
 
         Args:
             nx_graph:    Directed NetworkX graph (RTX-KG2 full_graph)
             gene_mapper: Loaded GeneMapper instance
             csv_path:    Path to iMCD_TAFRO_cell_specific_tstats.csv
+            cell_types:  Optional list of cell type column names to include.
+                         Example: ["T cells"] for a T-cells-only experiment.
+                         None (default) uses all cell types in the CSV.
 
         Returns:
             BuildResult with modified graph and composite node metadata.
@@ -153,19 +160,18 @@ class CompositeNodeBuilder:
         # Work on a copy — never mutate the original graph
         G = nx_graph.copy()
 
-        # Step 1: Castleman protein neighbors (incoming edges)
+        # Log direct Castleman neighbors for reference (informational only)
         protein_neighbors = self._get_protein_neighbors(G)
         logger.info(
-            f"Castleman has {len(protein_neighbors)} incoming protein neighbors"
+            f"Castleman has {len(protein_neighbors)} incoming protein neighbors "
+            f"(pre-existing graph edges)"
         )
 
-        # Step 2: Load t-stats from CSV for those neighbors
-        tstat_data = self._load_tstats_for_neighbors(
-            csv_path, gene_mapper, protein_neighbors
-        )
+        # Step 1+2: Load t-stats for ALL matched genes, filter cell types
+        tstat_data = self._load_tstats_all_genes(csv_path, gene_mapper, cell_types)
         logger.info(
-            f"Found t-stats in CSV for {len(tstat_data)} "
-            f"of {len(protein_neighbors)} neighbors"
+            f"Loaded {len(tstat_data)} (gene, cell_type) pairs from CSV "
+            f"(cell_types filter: {cell_types})"
         )
 
         # Step 3 + 4: Filter by min_tstat and normalize
@@ -208,27 +214,33 @@ class CompositeNodeBuilder:
                 neighbors[node_id] = gene_name
         return neighbors
 
-    def _load_tstats_for_neighbors(
+    def _load_tstats_all_genes(
         self,
         csv_path: Path,
         gene_mapper,
-        protein_neighbors: Dict[str, str],
+        cell_types_filter: Optional[List[str]] = None,
     ) -> Dict[Tuple[str, str], Dict]:
         """
-        Load t-stats from CSV for genes that are Castleman protein neighbors.
+        Load t-stats for ALL genes in the CSV that map to the graph.
+
+        Unlike the old _load_tstats_for_neighbors, this does not require
+        the gene to already have an edge to Castleman in the graph. Any gene
+        that maps to a UniProtKB ID is included. The t-stat is the evidence
+        of biological relevance — not the pre-existing graph topology.
+
+        Args:
+            csv_path:           Path to the t-stat CSV.
+            gene_mapper:        Loaded GeneMapper instance.
+            cell_types_filter:  If provided, only load these cell type columns.
+                                If None, load all cell type columns in the CSV.
 
         Returns:
             Dict mapping (gene_symbol, cell_type) -> {
                 'uniprot_id': str,
                 'raw_tstat': float,
             }
+            Only includes pairs where tstat > 0.
         """
-        # Build a set of gene symbols (uppercase) for the neighbors
-        neighbor_symbols = {
-            name.upper(): uid
-            for uid, name in protein_neighbors.items()
-        }
-
         result: Dict[Tuple[str, str], Dict] = {}
 
         with open(csv_path, newline="") as f:
@@ -236,14 +248,23 @@ class CompositeNodeBuilder:
             headers = reader.fieldnames or []
             cell_types = [h for h in headers if h not in ("", "gene")]
 
+            if cell_types_filter is not None:
+                cell_types = [ct for ct in cell_types if ct in cell_types_filter]
+                if not cell_types:
+                    logger.warning(
+                        f"cell_types_filter {cell_types_filter} matched none of "
+                        f"the CSV columns {headers}. No composite nodes will be "
+                        f"created. Check for typos in cell type names."
+                    )
+
             for row in reader:
                 gene_symbol = row.get("gene", "").strip()
-                gene_upper = gene_symbol.upper()
-
-                if gene_upper not in neighbor_symbols:
+                if not gene_symbol:
                     continue
 
-                uniprot_id = neighbor_symbols[gene_upper]
+                uniprot_id = gene_mapper.get_uniprot_id(gene_symbol)
+                if uniprot_id is None:
+                    continue
 
                 for ct in cell_types:
                     try:

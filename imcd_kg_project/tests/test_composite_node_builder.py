@@ -362,6 +362,66 @@ class TestBuild:
 
 
 # ---------------------------------------------------------------------------
+# Tests: Phase 5.3 new behaviour
+# ---------------------------------------------------------------------------
+
+class TestAllGenesMode:
+
+    def test_non_neighbor_gene_gets_composite_node(self):
+        """
+        A gene that is NOT a direct Castleman neighbor but IS in the CSV
+        should still get a composite node after the Phase 5.3 change.
+        This is the core difference from Phase 5.2.
+        """
+        G = make_synthetic_graph()
+        # Add a protein that has NO edge to Castleman
+        non_neighbor = "UniProtKB:P99999"
+        G.add_node(non_neighbor, name="ORPHAN", category="biolink:Protein")
+        # Confirm it is NOT a Castleman predecessor
+        assert non_neighbor not in list(G.predecessors(CASTLEMAN))
+
+        mapper = make_mapper_for(G)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            csv_path = make_csv([
+                {"gene": "ORPHAN", "B cells": 0, "ILC": 0,
+                 "Megakaryocytes/platelets": 0, "Monocytes": 10.0, "T cells": 0},
+            ], tmp)
+            builder = CompositeNodeBuilder(castleman_id=CASTLEMAN, min_tstat=2.0)
+            result = builder.build(G, mapper, csv_path)
+
+        comp_id = CompositeNodeBuilder.make_composite_id("ORPHAN", "Monocytes")
+        G2 = result.graph
+        assert result.n_composite_nodes == 1, "Expected 1 composite node for ORPHAN"
+        assert G2.has_node(comp_id), "Composite node not added"
+        assert G2.has_edge(CASTLEMAN, comp_id), "Missing Castleman->composite edge"
+        assert G2.has_edge(comp_id, non_neighbor), "Missing composite->protein edge"
+
+    def test_cell_type_filter_limits_composite_nodes(self):
+        """
+        Passing cell_types=["Monocytes"] should create only Monocyte
+        composite nodes, even if other cell types also have qualifying t-stats.
+        """
+        G = make_synthetic_graph()
+        mapper = make_mapper_for(G)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            csv_path = make_csv([
+                {"gene": "TNF", "B cells": 0, "ILC": 0,
+                 "Megakaryocytes/platelets": 0, "Monocytes": 32.2, "T cells": 5.0},
+            ], tmp)
+            builder = CompositeNodeBuilder(castleman_id=CASTLEMAN, min_tstat=2.0)
+            result = builder.build(G, mapper, csv_path, cell_types=["Monocytes"])
+
+        # Only 1 node: TNF|Monocytes — T cells excluded by filter
+        assert result.n_composite_nodes == 1
+        mono_id = CompositeNodeBuilder.make_composite_id("TNF", "Monocytes")
+        tcell_id = CompositeNodeBuilder.make_composite_id("TNF", "T cells")
+        assert result.graph.has_node(mono_id)
+        assert not result.graph.has_node(tcell_id)
+
+
+# ---------------------------------------------------------------------------
 # Tests: make_composite_id static method
 # ---------------------------------------------------------------------------
 

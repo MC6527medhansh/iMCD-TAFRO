@@ -225,6 +225,43 @@ class TestCompositeFinetuner:
             assert "seed_results" in data
             assert len(data["seed_results"]) == 1
 
+    def test_cell_types_param_propagates(self):
+        """
+        Passing cell_types=["T cells"] must reach the builder and produce
+        only T-cell composite nodes. This guards against the param being
+        silently ignored somewhere in the call chain.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            G = make_synthetic_graph()
+            graph_path = Path(tmp) / "full_graph.pkl"
+            with open(graph_path, "wb") as f:
+                pickle.dump(G, f)
+
+            csv_path     = make_minimal_csv(tmp)
+            training_dir = make_fake_training_data(tmp)
+            results_dir  = Path(tmp) / "results"
+
+            finetuner = CompositeFinetuner(min_tstat=2.0)
+            finetuner._training_data_path_override = training_dir
+
+            finetuner.run(
+                graph_path=graph_path,
+                csv_path=csv_path,
+                seeds=[42],
+                epochs=3,
+                results_dir=results_dir,
+                cell_types=["T cells"],
+            )
+
+            out_file = results_dir / "phase_5_2_results.json"
+            assert out_file.exists()
+            with open(out_file) as f:
+                data = json.load(f)
+            # cell_types must be saved so we can verify the filter was applied
+            assert data["cell_types"] == ["T cells"], (
+                "cell_types not saved in results — param may not have propagated"
+            )
+
     def test_adalimumab_not_in_supervision(self):
         """
         Adalimumab-Castleman must never appear as a supervision pair.
