@@ -134,5 +134,29 @@ Check: does adalimumab rank higher for Castleman than for diabetes/hypertension?
       Files: src/enhanced_kgnn/finetuner.py, tests/test_finetuner.py
              jobs/phase_5_2_finetune.sh, jobs/run_phase_5_2.py
       Also: gat_predictor.py patched to read edge 'weight' attributes
-      Next: commit, git pull on Sockeye, sbatch jobs/phase_5_2_finetune.sh
-- [ ] 5.2.5 Evaluation — runs automatically inside finetuner.py
+- [x] 5.2.5 Evaluation — COMPLETE (Sockeye, SLURM job ran successfully)
+      Results: results/phase_5_2/phase_5_2_results.json
+
+## Phase 5.2 Final Results (March 2026, Sockeye)
+
+Seeds: [42, 123, 303], epochs=200, min_tstat=2.0, 49 composite nodes created.
+
+| Target disease     | Adalimumab mean rank |
+|--------------------|----------------------|
+| Castleman (iMCD)   | **#13,346** (std=416)|
+| Type 2 Diabetes    | #15,008              |
+| Hypertension       | #14,928              |
+| Alzheimer Disease  | #14,948              |
+
+**Verdict: DISEASE-SPECIFIC** — adalimumab ranks ~1,600 positions higher
+for Castleman than for non-TNF diseases (mean non-TNF rank = #14,961).
+
+Interpretation:
+- The composite node architecture successfully creates a structural path that
+  the GATConv model routes through, giving Castleman a TNF-weighted signal.
+- The ~1,600 rank difference is statistically consistent across 3 seeds (std=416).
+- This is a meaningful result: Phase 5.1 showed ZERO disease-specificity
+  (Castleman ranked WORSE with TNF weights). Phase 5.2 shows POSITIVE specificity.
+- The ranking is still in the mid-teens thousands out of ~66,304 drugs, so
+  absolute rank is not yet clinically useful — but the disease-specificity
+  signal is now real and structural.
