@@ -132,7 +132,7 @@ for exp in EXPERIMENTS:
         "castleman_mean_rank": result.castleman_mean_rank,
         "castleman_std_rank":  result.castleman_std_rank,
         "non_tnf_mean_ranks":  result.non_tnf_mean_ranks,
-        "disease_specific":    result.disease_specific,
+        "disease_specific":    bool(result.disease_specific) if result.disease_specific is not None else None,
     }
 
     print(result.summary())
