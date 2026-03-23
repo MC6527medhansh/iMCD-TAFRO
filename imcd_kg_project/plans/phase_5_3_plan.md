@@ -75,8 +75,50 @@ available, it would likely make T cells the dominant signal.
 ## Current Status
 
 - [x] composite_node_builder.py updated — 22/22 tests passing locally
-- [x] finetuner.py updated — 47/47 tests passing locally
+- [x] finetuner.py updated — 48/48 tests passing locally
 - [x] run_phase_5_3.py created
 - [x] phase_5_3_celltype.sh created
-- [ ] Sockeye run — NEXT: commit, git pull on Sockeye, sbatch jobs/phase_5_3_celltype.sh
-- [ ] Results analysis
+- [x] Sockeye run COMPLETE (job 8638905, March 15 2026)
+- [x] Results analysis — see below
+
+## Phase 5.3 Final Results (Sockeye, March 2026)
+
+All experiments: epochs=200, min_tstat=2.0, seed=42 (combined uses [42,123,303]).
+
+| Experiment          | Composite nodes | Castleman rank | Non-TNF mean | Gap    | Verdict      |
+|---------------------|-----------------|----------------|--------------|--------|--------------|
+| Combined (all)      | 7,362           | #13,042        | #14,485      | +1,443 | SPECIFIC     |
+| Monocytes only      | 2,409           | #13,397        | #13,475      | +78    | barely       |
+| T cells only        | 2,334           | #13,412        | #13,452      | +40    | barely       |
+| B cells only        | 949             | #13,412        | #13,452      | +40    | barely       |
+| ILC only            | 1,300           | #13,333        | #13,356      | +23    | barely       |
+| Megakaryocytes only | 370             | #13,866        | #13,818      | -48    | NOT SPECIFIC |
+
+## Key Findings
+
+1. Combined is the only experiment with a meaningful disease-specificity gap (+1,443).
+   Individual cell types produce gaps of 23-78 — within noise for a 1-seed run.
+
+2. Professor's hypothesis (T cells > Monocytes) is not confirmed.
+   Monocytes has a slightly larger gap (78) than T cells (40). This is consistent
+   with TNF t-stat being 32.22 in Monocytes vs 2.91 in T cells in the CSV.
+   It supports the argument that the "T cells" aggregate dilutes the naive CD4+
+   T cell signal — finer granularity would likely change this ordering.
+
+3. B cells and T cells produce IDENTICAL Castleman ranks (#13,412) despite having
+   very different numbers of composite nodes (949 vs 2,334). This strongly suggests
+   that single-seed per-cell-type experiments are too noisy to rank individual cell
+   types against each other. The 1-seed approach was right for a first look but
+   multi-seed would be needed to distinguish them reliably.
+
+4. Megakaryocytes is the only NOT SPECIFIC result. Only 370 composite nodes — too
+   sparse at this training scale.
+
+5. Combined Phase 5.3 (#13,042) beats Phase 5.2 (#13,346) — confirms that using
+   all 10,900 genes instead of just the 68 Castleman neighbors was an improvement.
+
+## Note on summary JSON
+
+The run_phase_5_3.py script failed to write phase_5_3_summary.json due to a
+numpy bool serialization bug. All 6 individual experiment JSONs saved correctly.
+Bug fixed in run_phase_5_3.py. No rerun needed — data is all present.

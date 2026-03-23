@@ -234,9 +234,46 @@ to learn that high-t-stat paths correlate with Castleman drug relevance.
 - `tests/test_composite_node_builder.py` — 22 tests (2 new), all passing
 - `plans/phase_5_3_plan.md` — full plan
 
-**Local test status: 47/47 passing**
+**Local test status: 48/48 passing**
 
-**Next: commit, git pull on Sockeye, sbatch jobs/phase_5_3_celltype.sh**
+**Sockeye results (job 8638905, March 15 2026):**
+```
+Combined (all cell types):   Castleman #13,042  non-TNF mean #14,485  gap=+1,443  SPECIFIC
+Monocytes only:              Castleman #13,397  non-TNF mean #13,475  gap=+78     barely
+T cells only:                Castleman #13,412  non-TNF mean #13,452  gap=+40     barely
+B cells only:                Castleman #13,412  non-TNF mean #13,452  gap=+40     barely
+ILC only:                    Castleman #13,333  non-TNF mean #13,356  gap=+23     barely
+Megakaryocytes only:         Castleman #13,866  non-TNF mean #13,818  gap=-48     NOT SPECIFIC
+```
+Combined is the only experiment with a meaningful gap. Individual cell types at 1 seed
+are too noisy. T cells and B cells identical rank despite different node counts — confirms
+single-seed per-cell-type is insufficient to distinguish them. Professor's T cells > Monocytes
+hypothesis not confirmed — supports argument that "T cells" aggregate dilutes naive CD4+ signal.
+Phase 5.3 combined (#13,042) beats Phase 5.2 (#13,346) — all-gene approach confirmed better.
+
+### Phase 5.4: All T-Stats Experiment (IN PROGRESS — local complete)
+
+**One change from Phase 5.3:** `MIN_TSTAT = 0.0` instead of 2.0. All non-zero
+t-stats from the CSV are included. Exact zeros are still excluded (handled by
+`_load_tstats_all_genes` which filters `tstat > 0` before min_tstat is applied).
+
+**Expected composite node counts (approximate):**
+- Combined: ~35,000 nodes
+- T cells: ~11,700 nodes (vs 2,334 in Phase 5.3)
+- Monocytes: ~9,500 nodes (vs 2,409 in Phase 5.3)
+- ILC: ~7,200 nodes (vs 1,300 in Phase 5.3)
+- B cells: ~5,800 nodes (vs 949 in Phase 5.3)
+- Megakaryocytes: ~1,300 nodes (vs 370 in Phase 5.3)
+
+**Professor's hypothesis:** with all t-stats included, T cells will have the most
+composite nodes and should produce the highest adalimumab ranking for Castleman.
+
+**Files created:**
+- `jobs/run_phase_5_4.py` — identical to run_phase_5_3.py except MIN_TSTAT=0.0
+  and results go to results/phase_5_4/
+- `jobs/phase_5_4_notstat.sh` — SLURM job (48h, 64GB)
+
+**Next: commit, git pull on Sockeye, sbatch jobs/phase_5_4_notstat.sh**
 
 ### What's next (after Phase 5.3 results)
 
