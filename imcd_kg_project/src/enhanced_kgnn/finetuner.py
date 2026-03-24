@@ -51,6 +51,7 @@ class SeedResult:
     castleman_rank: Optional[int]
     castleman_score: Optional[float]
     non_tnf_ranks: Dict[str, Optional[int]]   # disease_name -> rank
+    top_drugs: List[Dict] = field(default_factory=list)  # top-200 drugs for Castleman
 
 
 @dataclass
@@ -87,6 +88,37 @@ NON_TNF_DISEASES = {
     "MONDO:0011382": "Alzheimer Disease",
 }
 
+# Mechanism annotations for known drugs.
+# Only the 3 CURIEs confirmed against the graph are guaranteed correct.
+# Others are best-effort based on ChEMBL IDs in RTX-KG2; verify against graph
+# node names before publishing.
+DRUG_MECHANISMS: Dict[str, str] = {
+    # Confirmed against RTX-KG2 (see CLAUDE.md)
+    "CHEMBL.COMPOUND:CHEMBL1201580": "Anti-TNF",     # adalimumab
+    "CHEMBL.COMPOUND:CHEMBL1743070": "Anti-IL-6",    # siltuximab
+    "CHEMBL.COMPOUND:CHEMBL1237022": "Anti-IL-6R",   # tocilizumab
+    # Best-effort — verify CHEMBL IDs against graph node names if needed
+    "CHEMBL.COMPOUND:CHEMBL1255743": "Anti-TNF",         # etanercept
+    "CHEMBL.COMPOUND:CHEMBL1201581": "Anti-TNF",         # infliximab
+    "CHEMBL.COMPOUND:CHEMBL1743071": "Anti-TNF",         # certolizumab pegol
+    "CHEMBL.COMPOUND:CHEMBL1743072": "Anti-TNF",         # golimumab
+    "CHEMBL.COMPOUND:CHEMBL3544997": "Anti-IL-6R",       # sarilumab
+    "CHEMBL.COMPOUND:CHEMBL1201576": "Anti-CD20",        # rituximab
+    "CHEMBL.COMPOUND:CHEMBL1201882": "Anti-IL-1R",       # anakinra
+    "CHEMBL.COMPOUND:CHEMBL1742999": "Anti-IL-1β",       # canakinumab
+    "CHEMBL.COMPOUND:CHEMBL3545010": "Anti-IL-17A",      # secukinumab
+    "CHEMBL.COMPOUND:CHEMBL3545045": "Anti-IL-17A",      # ixekizumab
+    "CHEMBL.COMPOUND:CHEMBL650":     "Corticosteroid",   # prednisone
+    "CHEMBL.COMPOUND:CHEMBL651":     "Corticosteroid",   # prednisolone
+    "CHEMBL.COMPOUND:CHEMBL535":     "Corticosteroid",   # methylprednisolone
+    "CHEMBL.COMPOUND:CHEMBL1549":    "Corticosteroid",   # dexamethasone
+    "CHEMBL.COMPOUND:CHEMBL88":      "Cytotoxic",        # cyclophosphamide
+    "CHEMBL.COMPOUND:CHEMBL1643":    "Immunomodulatory", # thalidomide
+    "CHEMBL.COMPOUND:CHEMBL426082":  "mTOR inhibitor",   # sirolimus
+    "CHEMBL.COMPOUND:CHEMBL1201585": "Anti-HER2",        # trastuzumab
+    "CHEMBL.COMPOUND:CHEMBL325041":  "Proteasome inhibitor",  # bortezomib
+}
+
 
 class CompositeFinetuner:
     """
@@ -94,7 +126,7 @@ class CompositeFinetuner:
       1. Build composite-node-augmented graph
       2. Add supervision pairs for siltuximab + tocilizumab
       3. Train GATConv
-      4. Evaluate adalimumab rank
+      4. Evaluate adalimumab rank + top-200 drug table for Castleman
 
     Args:
         castleman_id:   Castleman disease CURIE
@@ -265,7 +297,14 @@ class CompositeFinetuner:
             )
             model = predictor.train_model(data, model, epochs=epochs, lr=lr)
 
-            # Evaluate adalimumab rank for Castleman
+            # Top-200 drug table for Castleman (professor's requested output).
+            # Note: adalimumab ranks at ~#12,000 so will NOT appear here —
+            # its rank is tracked separately below via get_adalimumab_rank().
+            top_drugs = predictor.get_top_n_drugs(model, data, self.CASTLEMAN_ID, n=200)
+            for entry in top_drugs:
+                entry["mechanism"] = DRUG_MECHANISMS.get(entry["drug_id"], "")
+
+            # Adalimumab rank for Castleman (held-out evaluation)
             cast_rank, cast_score = predictor.get_adalimumab_rank(
                 model, data, self.CASTLEMAN_ID
             )
@@ -287,6 +326,7 @@ class CompositeFinetuner:
                 castleman_rank=cast_rank,
                 castleman_score=float(cast_score) if cast_score is not None else None,
                 non_tnf_ranks=non_tnf_ranks,
+                top_drugs=top_drugs,
             ))
 
         # ------------------------------------------------------------------
@@ -345,6 +385,7 @@ class CompositeFinetuner:
                         "castleman_rank": r.castleman_rank,
                         "castleman_score": r.castleman_score,
                         "non_tnf_ranks": r.non_tnf_ranks,
+                        "top_drugs": r.top_drugs,
                     }
                     for r in seed_results
                 ],

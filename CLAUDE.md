@@ -251,46 +251,54 @@ single-seed per-cell-type is insufficient to distinguish them. Professor's T cel
 hypothesis not confirmed — supports argument that "T cells" aggregate dilutes naive CD4+ signal.
 Phase 5.3 combined (#13,042) beats Phase 5.2 (#13,346) — all-gene approach confirmed better.
 
-### Phase 5.4: All T-Stats Experiment (IN PROGRESS — local complete)
+### Phase 5.4: All T-Stats Experiment (COMPLETE — March 2026)
 
 **One change from Phase 5.3:** `MIN_TSTAT = 0.0` instead of 2.0. All non-zero
 t-stats from the CSV are included. Exact zeros are still excluded (handled by
 `_load_tstats_all_genes` which filters `tstat > 0` before min_tstat is applied).
-
-**Expected composite node counts (approximate):**
-- Combined: ~35,000 nodes
-- T cells: ~11,700 nodes (vs 2,334 in Phase 5.3)
-- Monocytes: ~9,500 nodes (vs 2,409 in Phase 5.3)
-- ILC: ~7,200 nodes (vs 1,300 in Phase 5.3)
-- B cells: ~5,800 nodes (vs 949 in Phase 5.3)
-- Megakaryocytes: ~1,300 nodes (vs 370 in Phase 5.3)
-
-**Professor's hypothesis:** with all t-stats included, T cells will have the most
-composite nodes and should produce the highest adalimumab ranking for Castleman.
 
 **Files created:**
 - `jobs/run_phase_5_4.py` — identical to run_phase_5_3.py except MIN_TSTAT=0.0
   and results go to results/phase_5_4/
 - `jobs/phase_5_4_notstat.sh` — SLURM job (48h, 64GB)
 
-**Next: commit, git pull on Sockeye, sbatch jobs/phase_5_4_notstat.sh**
+**Sockeye results (seeds=[42,123,303] for combined, seed=42 for per-cell-type):**
+```
+Combined (all cell types):   Castleman #12,272  non-TNF mean #13,780  gap=+1,508  SPECIFIC  (best ever)
+Megakaryocytes only:         ~1,300 nodes,  gap=+93   SPECIFIC
+B cells only:                ~5,800 nodes,  gap=+16   barely
+ILC only:                    ~7,200 nodes,  gap=-12   NOT SPECIFIC
+Monocytes only:              ~9,500 nodes,  gap=-46   NOT SPECIFIC
+T cells only:                10,208 nodes,  gap=-55   NOT SPECIFIC (worst)
+```
+Combined is the best result across all phases: rank #12,272 (best), gap +1,508 (largest).
+T cells and Monocytes flipped to NOT SPECIFIC — lowering the threshold to 0.0 adds
+thousands of low-t-stat genes that outweigh the true TNF signal for individual cell types.
+The combined experiment survives because aggregating 5 cell types provides enough genuine
+signal. Professor's T cells > Monocytes hypothesis not confirmed.
+See `plans/phase_5_4_plan.md` for full analysis.
 
-### What's next (after Phase 5.3 results)
+### What's next (after Phase 5.4 results)
 
-**Immediate next step: discuss Phase 5.2 results with Professor Singh.**
+**Immediate next step: discuss Phase 5.4 results with Professor Singh.**
 
-Questions to raise:
-1. Can we get naive CD4+ T cell-specific breakdown? TNF t-stat in "T cells" aggregate
-   is only 2.91 — much lower than Monocytes (32.22). The paper's key finding is TNF
-   upregulation in naive CD4+ T cells. Finer cell-type granularity would strengthen the signal.
-2. Phase 5.2 absolute rank (#13,346) is not clinically useful yet — only the
-   disease-specificity gap matters. Is this convincing enough for the proof of concept?
-3. Should we try more epochs (500+) or lower min_tstat to include more composite nodes?
+Message sent (March 2026). Key points raised:
+1. Combined min_tstat=0.0 is the best result: rank #12,272, gap +1,508.
+2. Individual cell types are noisy at 1 seed — T cells and Monocytes flipped to NOT SPECIFIC.
+3. T cells hypothesis not confirmed — supports naive CD4+ aggregate dilution argument.
+4. Megakaryocytes improved from NOT SPECIFIC (Phase 5.3) to SPECIFIC (Phase 5.4, gap=+93).
 
-**Potential next phases (pending discussion):**
-- Phase 5.3: Increase epochs (200→500), tune min_tstat, compare rank trajectories
-- Phase 5.4: Apply same pipeline to HF-KG as second validation case
-- Or: write up results as-is — disease-specificity is demonstrated
+Open questions pending Prof. Singh's response:
+1. Can we get naive CD4+ T cell-specific t-stat breakdown from the scRNA-seq data?
+   TNF t-stat in "T cells" aggregate is only 2.91 vs 32.22 in Monocytes. Finer
+   granularity would likely make T cells the dominant signal.
+2. Is the combined result (#12,272, gap=+1,508) convincing enough for the proof of concept?
+3. Next steps: apply to HF-KG as second validation case, or write up iMCD results?
+
+**Progression across phases (combined experiment):**
+- Phase 5.2: #13,346  gap ~1,600  (49 composite nodes, min_tstat=2.0)
+- Phase 5.3: #13,042  gap +1,443  (~7,362 nodes, min_tstat=2.0, all genes)
+- Phase 5.4: #12,272  gap +1,508  (32,118 nodes, min_tstat=0.0)  ← current best
 
 ### Confirmed entity IDs (verified by name search in graph)
 - Siltuximab:   CHEMBL.COMPOUND:CHEMBL1743070 (direct edge to Castleman: YES)

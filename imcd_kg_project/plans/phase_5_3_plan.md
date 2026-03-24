@@ -122,3 +122,8 @@ All experiments: epochs=200, min_tstat=2.0, seed=42 (combined uses [42,123,303])
 The run_phase_5_3.py script failed to write phase_5_3_summary.json due to a
 numpy bool serialization bug. All 6 individual experiment JSONs saved correctly.
 Bug fixed in run_phase_5_3.py. No rerun needed — data is all present.
+
+## Follow-on: Phase 5.4
+
+Phase 5.4 repeated these 6 experiments with min_tstat=0.0 (all non-zero t-stats).
+Combined improved to #12,272 (gap=+1,508). See `plans/phase_5_4_plan.md`.

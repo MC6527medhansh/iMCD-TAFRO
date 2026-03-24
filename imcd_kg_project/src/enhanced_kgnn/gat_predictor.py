@@ -619,3 +619,30 @@ class GATPredictor:
             if drug == self.adalimumab_id:
                 return rank, score
         return None, None
+
+    def get_top_n_drugs(
+        self, model: GATModel, data: Data, disease_entity: str, n: int = 200
+    ) -> List[Dict]:
+        """
+        Return the top-n ranked drugs for a disease with names and scores.
+
+        Uses the same evaluate_drug_ranking() call so no extra model forward pass.
+        Drug names are pulled from the nx_graph node 'name' attribute.
+
+        Returns list of dicts: [{"rank": int, "drug_id": str, "name": str, "score": float}, ...]
+        """
+        ranking = self.evaluate_drug_ranking(model, data, disease_entity)
+        top = []
+        for rank, (drug_id, score) in enumerate(ranking.items(), 1):
+            if rank > n:
+                break
+            name = drug_id
+            if self.nx_graph is not None:
+                name = self.nx_graph.nodes[drug_id].get("name", drug_id)
+            top.append({
+                "rank": rank,
+                "drug_id": drug_id,
+                "name": name,
+                "score": round(score, 8),
+            })
+        return top
