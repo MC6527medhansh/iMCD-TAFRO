@@ -620,29 +620,76 @@ class GATPredictor:
                 return rank, score
         return None, None
 
-    def get_top_n_drugs(
-        self, model: GATModel, data: Data, disease_entity: str, n: int = 200
-    ) -> List[Dict]:
+    def get_drug_ranks(
+        self,
+        model: GATModel,
+        data: Data,
+        disease_entity: str,
+        drugs_of_interest: Dict[str, str],
+        top_n: int = 500,
+    ) -> Tuple[List[Dict], Dict[str, Dict]]:
         """
-        Return the top-n ranked drugs for a disease with names and scores.
+        Single forward pass over all 66,304 drugs. Returns two things:
 
-        Uses the same evaluate_drug_ranking() call so no extra model forward pass.
-        Drug names are pulled from the nx_graph node 'name' attribute.
+          top_n_table:
+            Top-N drugs sorted by score descending.
+            [{rank, drug_id, name, score}, ...]
+            Shows whatever the model rates highest — not filtered to known drugs.
 
-        Returns list of dicts: [{"rank": int, "drug_id": str, "name": str, "score": float}, ...]
+          specific:
+            Rank + name + score for every drug in drugs_of_interest,
+            regardless of their rank position.
+            {chembl_id: {rank, name, score}}
+            This is how we track adalimumab (#13,000+), siltuximab, tocilizumab
+            even when they do not appear in the top-N table.
+
+        Why one pass:
+          evaluate_drug_ranking() runs the full model forward pass and sorts all
+          drugs. We iterate the sorted result once to fill both outputs.
+          No second forward pass is ever needed.
+
+        Early exit:
+          Iteration stops once rank > top_n AND all drugs_of_interest are found.
+          Adalimumab ranks at ~#13,000 so we iterate ~13,000 entries vs 66,304.
+
+        Args:
+            model:             trained GATModel
+            data:              PyG Data object
+            disease_entity:    CURIE of the disease to rank drugs against
+            drugs_of_interest: {chembl_id: display_name} — drugs to always track
+            top_n:             number of top drugs to include in the table
+
+        Returns:
+            (top_n_table, specific)
         """
         ranking = self.evaluate_drug_ranking(model, data, disease_entity)
-        top = []
+
+        top_n_table: List[Dict] = []
+        specific: Dict[str, Dict] = {}
+        doi_found = 0
+        doi_total = len(drugs_of_interest)
+
         for rank, (drug_id, score) in enumerate(ranking.items(), 1):
-            if rank > n:
+            name = self.nx_graph.nodes[drug_id].get("name", drug_id) \
+                if self.nx_graph is not None else drug_id
+
+            if rank <= top_n:
+                top_n_table.append({
+                    "rank":    rank,
+                    "drug_id": drug_id,
+                    "name":    name,
+                    "score":   round(score, 8),
+                })
+
+            if drug_id in drugs_of_interest and drug_id not in specific:
+                specific[drug_id] = {
+                    "rank":  rank,
+                    "name":  name,
+                    "score": round(score, 8),
+                }
+                doi_found += 1
+
+            if rank > top_n and doi_found >= doi_total:
                 break
-            name = drug_id
-            if self.nx_graph is not None:
-                name = self.nx_graph.nodes[drug_id].get("name", drug_id)
-            top.append({
-                "rank": rank,
-                "drug_id": drug_id,
-                "name": name,
-                "score": round(score, 8),
-            })
-        return top
+
+        return top_n_table, specific

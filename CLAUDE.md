@@ -74,26 +74,33 @@ imcd_kg_project/
       composite_node_builder.py        — builds (gene|cell_type) intermediate nodes (Phase 5.2)
       finetuner.py                     — full training + evaluation pipeline (Phase 5.2)
   tests/
-    test_gat_unit.py                   — 27 unit tests, all passing locally
+    test_gat_unit.py                   — 32 unit tests (27 + 5 TestGetDrugRanks, Phase 5.5)
     test_gene_mapper.py                — 21 tests (Phase 5.2)
     test_composite_node_builder.py     — 20 tests (Phase 5.2)
-    test_finetuner.py                  — 4 tests (Phase 5.2)
+    test_finetuner.py                  — 6 tests (Phase 5.5: added test_drug_ranks_in_results)
   jobs/
-    phase_5_3_celltype.sh              — Phase 5.3 SLURM job (NEXT to run)
-    run_phase_5_3.py                   — entry point for Phase 5.3 (6 experiments)
-    phase_5_2_finetune.sh              — Phase 5.2 SLURM job (COMPLETE — DISEASE-SPECIFIC)
+    phase_5_5_drugtable.sh             — Phase 5.5 SLURM job (NEXT to run)
+    run_phase_5_5.py                   — entry point for Phase 5.5 (6 experiments)
+    phase_5_4_notstat.sh               — Phase 5.4 SLURM job (COMPLETE)
+    run_phase_5_4.py                   — entry point for Phase 5.4 job
+    phase_5_3_celltype.sh              — Phase 5.3 SLURM job (COMPLETE)
+    run_phase_5_3.py                   — entry point for Phase 5.3 job
+    phase_5_2_finetune.sh              — Phase 5.2 SLURM job (COMPLETE)
     run_phase_5_2.py                   — entry point for Phase 5.2 job
-    phase_5_1_gat_validation.sh        — Phase 5.1 SLURM job (completed, failed)
-    phase_4_2_specificity.sh           — Phase 4.2 SLURM job (completed, failed)
   data/
     experimental/
       iMCD_TAFRO_cell_specific_tstats.csv  — 12,500 genes × 5 cell types (Prof. Singh's data)
   results/
+    phase_5_4/                         — min_tstat=0.0 results (on Sockeye)
+    phase_5_3/                         — per-cell-type results (on Sockeye)
     phase_5_2/                         — DISEASE-SPECIFIC result (on Sockeye)
     phase_5_1/                         — Phase 5.1 results (on Sockeye)
     phase_4_2_specificity/             — Phase 4.2 results (on Sockeye)
     diagnostics/                       — Jan 2026 diagnostic results (on Sockeye)
   plans/
+    phase_5_5_plan.md                  — Phase 5.5 drug ranking table plan
+    phase_5_4_plan.md                  — Phase 5.4 full analysis + results
+    phase_5_3_plan.md                  — Phase 5.3 per-cell-type plan
     phase_5_2_plan.md                  — full subphase breakdown + final results
 ```
 
@@ -278,27 +285,53 @@ The combined experiment survives because aggregating 5 cell types provides enoug
 signal. Professor's T cells > Monocytes hypothesis not confirmed.
 See `plans/phase_5_4_plan.md` for full analysis.
 
-### What's next (after Phase 5.4 results)
+### Phase 5.5: Drug Ranking Table (IN PROGRESS — ready for Sockeye)
 
-**Immediate next step: discuss Phase 5.4 results with Professor Singh.**
+**Professor's question:** "I'm more interested in where existing drugs of
+Castleman's are being ranked — anti-IL6, TNF, IL2. How does the ranking of
+these three drugs differ between the cell types?"
 
-Message sent (March 2026). Key points raised:
-1. Combined min_tstat=0.0 is the best result: rank #12,272, gap +1,508.
-2. Individual cell types are noisy at 1 seed — T cells and Monocytes flipped to NOT SPECIFIC.
-3. T cells hypothesis not confirmed — supports naive CD4+ aggregate dilution argument.
-4. Megakaryocytes improved from NOT SPECIFIC (Phase 5.3) to SPECIFIC (Phase 5.4, gap=+93).
+Phases 5.2–5.4 only reported adalimumab's rank. Phase 5.5 extends to the
+full drug ranking table: explicit rank + score for all confirmed drugs of
+interest (adalimumab, siltuximab, tocilizumab) across all 6 experiments.
 
-Open questions pending Prof. Singh's response:
-1. Can we get naive CD4+ T cell-specific t-stat breakdown from the scRNA-seq data?
-   TNF t-stat in "T cells" aggregate is only 2.91 vs 32.22 in Monocytes. Finer
-   granularity would likely make T cells the dominant signal.
-2. Is the combined result (#12,272, gap=+1,508) convincing enough for the proof of concept?
-3. Next steps: apply to HF-KG as second validation case, or write up iMCD results?
+**One change from Phase 5.4:** the evaluation pipeline, not the parameters.
+`min_tstat=0.0`, same 6 experiments, same seeds, same epochs.
+
+**Implementation (already done):**
+- `gat_predictor.py`: added `get_drug_ranks()` — single forward pass returning
+  BOTH top-N table (generic) AND explicit tracking for drugs_of_interest
+  regardless of rank position. Adalimumab at #13,000 is always tracked.
+  Removed `get_top_n_drugs()` (was returning random compounds — wrong approach).
+- `finetuner.py`: `DRUGS_OF_INTEREST` dict (3 confirmed CHEMBL IDs only).
+  Seed loop calls `get_drug_ranks()` once. Saves `top_500_castleman`,
+  `drug_ranks_castleman`, and aggregated `drug_mean_ranks_castleman`.
+- Tests: `TestGetDrugRanks` (5 tests in `test_gat_unit.py`),
+  `test_drug_ranks_in_results` + updated `test_results_saved_to_disk`
+  (in `test_finetuner.py`).
+
+**Confirmed drugs of interest:**
+- Adalimumab:  CHEMBL1201580  (Anti-TNF, held out)
+- Siltuximab:  CHEMBL1743070  (Anti-IL-6, positive supervision)
+- Tocilizumab: CHEMBL1237022  (Anti-IL-6R, positive supervision)
+
+Do NOT add unverified CHEMBL IDs. Search graph node names on Sockeye first.
+
+**Why the first Phase 5.5 run (job 9338927) was wrong:**
+Used top-200 generic list. Known drugs (at #13,000+) not in top 200 → not
+reported. Fixed by replacing `get_top_n_drugs()` with `get_drug_ranks()`.
+
+**Expected output:** siltuximab/tocilizumab at rank #1/#2 (in supervision),
+adalimumab at ~#12,000–14,000 (held out), results differ slightly from Phase
+5.4 due to CPU non-determinism.
+
+**Next step: run tests locally, then commit and sbatch.**
 
 **Progression across phases (combined experiment):**
 - Phase 5.2: #13,346  gap ~1,600  (49 composite nodes, min_tstat=2.0)
 - Phase 5.3: #13,042  gap +1,443  (~7,362 nodes, min_tstat=2.0, all genes)
 - Phase 5.4: #12,272  gap +1,508  (32,118 nodes, min_tstat=0.0)  ← current best
+- Phase 5.5: TBD      gap TBD     (32,118 nodes, min_tstat=0.0, drug table)
 
 ### Confirmed entity IDs (verified by name search in graph)
 - Siltuximab:   CHEMBL.COMPOUND:CHEMBL1743070 (direct edge to Castleman: YES)

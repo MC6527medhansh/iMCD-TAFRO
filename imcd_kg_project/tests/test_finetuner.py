@@ -224,6 +224,19 @@ class TestCompositeFinetuner:
             assert "castleman_mean_rank" in data
             assert "seed_results" in data
             assert len(data["seed_results"]) == 1
+            # Phase 5.5 additions: per-seed drug table and drug-of-interest ranks
+            seed_r = data["seed_results"][0]
+            assert "drug_ranks_castleman" in seed_r, (
+                "drug_ranks_castleman missing from seed_results — "
+                "get_drug_ranks() not wired up in finetuner"
+            )
+            assert "top_500_castleman" in seed_r, (
+                "top_500_castleman missing from seed_results"
+            )
+            # Aggregated mean ranks must be present at top level
+            assert "drug_mean_ranks_castleman" in data, (
+                "drug_mean_ranks_castleman missing from top-level results"
+            )
 
     def test_cell_types_param_propagates(self):
         """
@@ -296,3 +309,65 @@ class TestCompositeFinetuner:
                     seeds=[42],
                     epochs=3,
                 )
+
+    def test_drug_ranks_in_results(self):
+        """
+        FinetuneResult must contain drug_ranks_castleman per seed and
+        drug_mean_ranks_castleman aggregated across seeds.
+
+        This guards the Phase 5.5 invariant: after get_drug_ranks() is called,
+        confirmed drugs of interest (adalimumab, siltuximab, tocilizumab) must
+        be tracked explicitly — not just reported when they happen to appear in
+        the top-N table. Adalimumab ranks at ~#13,000 and will never be in the
+        top-500 table; the drug_ranks_castleman dict is the only way to track it.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            G = make_synthetic_graph()
+            graph_path = Path(tmp) / "full_graph.pkl"
+            with open(graph_path, "wb") as f:
+                pickle.dump(G, f)
+
+            csv_path     = make_minimal_csv(tmp)
+            training_dir = make_fake_training_data(tmp)
+            results_dir  = Path(tmp) / "results"
+
+            finetuner = CompositeFinetuner(min_tstat=2.0)
+            finetuner._training_data_path_override = training_dir
+
+            result = finetuner.run(
+                graph_path=graph_path,
+                csv_path=csv_path,
+                seeds=[42],
+                epochs=3,
+                results_dir=results_dir,
+            )
+
+        # Per-seed: drug_ranks_castleman must be a dict keyed by drug name
+        sr = result.seed_results[0]
+        assert isinstance(sr.drug_ranks_castleman, dict), (
+            "drug_ranks_castleman must be a dict"
+        )
+        # Confirmed drugs of interest must be tracked
+        for drug_name in ("adalimumab", "siltuximab", "tocilizumab"):
+            assert drug_name in sr.drug_ranks_castleman, (
+                f"{drug_name} missing from drug_ranks_castleman — "
+                "DRUGS_OF_INTEREST tracking broken"
+            )
+            entry = sr.drug_ranks_castleman[drug_name]
+            assert "rank"      in entry, f"rank missing for {drug_name}"
+            assert "score"     in entry, f"score missing for {drug_name}"
+            assert "mechanism" in entry, f"mechanism missing for {drug_name}"
+            assert "drug_id"   in entry, f"drug_id missing for {drug_name}"
+
+        # Aggregated: drug_mean_ranks_castleman at top level
+        assert isinstance(result.drug_mean_ranks_castleman, dict), (
+            "drug_mean_ranks_castleman must be a dict"
+        )
+        for drug_name in ("adalimumab", "siltuximab", "tocilizumab"):
+            assert drug_name in result.drug_mean_ranks_castleman, (
+                f"{drug_name} missing from drug_mean_ranks_castleman"
+            )
+            agg = result.drug_mean_ranks_castleman[drug_name]
+            assert "mean_rank"  in agg
+            assert "std_rank"   in agg
+            assert "mean_score" in agg

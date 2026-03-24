@@ -650,5 +650,162 @@ class TestSyntheticEndToEnd:
         )
 
 
+# ---------------------------------------------------------------------------
+# get_drug_ranks tests
+# ---------------------------------------------------------------------------
+
+class TestGetDrugRanks:
+    """
+    Tests for GATPredictor.get_drug_ranks().
+
+    Why these tests matter:
+      Phase 5.5 ran on Sockeye without any tests and returned garbage results —
+      random compounds at the top, all known drugs absent. Root cause: the
+      earlier get_top_n_drugs() only returned the top-200 generic list, and
+      adalimumab (#13,000+) was never in that window.
+
+      get_drug_ranks() is the fix: a single forward pass that fills BOTH a
+      top-N table (generic) AND an explicit tracker for drugs_of_interest
+      regardless of their rank position. These tests verify that invariant.
+    """
+
+    def _build_data_and_predictor(self):
+        """
+        Build a tiny graph + trained model + predictor for get_drug_ranks tests.
+        7 nodes: 3 drugs, 2 diseases, 2 proteins.
+        drugs_of_interest: all 3 drug IDs (one will rank outside top-N to test
+        explicit tracking).
+        """
+        G = make_synthetic_graph()  # has ADA, OTHER drug, 2 diseases, 2 proteins
+        # Add a second extra drug so we have 3 total
+        G.add_node("CHEMBL.COMPOUND:THIRD", name="ThirdDrug", category="biolink:Drug")
+        G.add_edge("CHEMBL.COMPOUND:THIRD", "UniProtKB:TNF")
+
+        entities = sorted(G.nodes())
+        entity_to_idx = {e: i for i, e in enumerate(entities)}
+        N = len(entities)
+
+        x = torch.zeros(N, 3)
+        for entity, idx in entity_to_idx.items():
+            if entity.startswith("CHEMBL.COMPOUND:"):
+                x[idx, 0] = 1.0
+            elif entity.startswith("MONDO:"):
+                x[idx, 1] = 1.0
+            else:
+                x[idx, 2] = 1.0
+
+        edge_src, edge_dst, edge_weights = [], [], []
+        for source, target in G.edges():
+            edge_src.extend([entity_to_idx[source], entity_to_idx[target]])
+            edge_dst.extend([entity_to_idx[target], entity_to_idx[source]])
+            edge_weights.extend([1.0, 1.0])
+
+        edge_index = torch.tensor([edge_src, edge_dst], dtype=torch.long)
+        edge_attr = torch.tensor(edge_weights, dtype=torch.float).unsqueeze(1)
+
+        # Minimal supervision: one pair
+        from torch_geometric.data import Data
+        train_edge_index = torch.tensor(
+            [[entity_to_idx["CHEMBL.COMPOUND:OTHER"]],
+             [entity_to_idx["MONDO:CASTLEMAN"]]], dtype=torch.long
+        )
+        train_edge_labels = torch.tensor([1.0])
+        data = Data(
+            x=x, edge_index=edge_index, edge_attr=edge_attr,
+            train_edge_index=train_edge_index,
+            train_edge_labels=train_edge_labels,
+            num_nodes=N,
+        )
+
+        torch.manual_seed(42)
+        model = GATModel(input_dim=3, hidden_dim=8, output_dim=4, heads=4, edge_dim=1)
+        model.eval()
+
+        predictor = make_mock_predictor()
+        predictor.nx_graph = G
+        predictor.entity_to_idx = entity_to_idx
+        predictor.idx_to_entity = {i: e for e, i in entity_to_idx.items()}
+
+        drugs_of_interest = {
+            "CHEMBL.COMPOUND:ADA":   "adalimumab",
+            "CHEMBL.COMPOUND:OTHER": "otherdrug",
+            "CHEMBL.COMPOUND:THIRD": "thirddrug",
+        }
+        return predictor, model, data, drugs_of_interest
+
+    def test_top_n_table_length(self):
+        """top_n_table must have exactly top_n entries (when there are enough drugs)."""
+        predictor, model, data, doi = self._build_data_and_predictor()
+        top_n_table, _ = predictor.get_drug_ranks(
+            model, data, "MONDO:CASTLEMAN", doi, top_n=2
+        )
+        # Graph has 3 drugs; top_n=2 → table has 2 entries
+        assert len(top_n_table) == 2, (
+            f"Expected 2 entries in top_n_table, got {len(top_n_table)}"
+        )
+
+    def test_specific_drugs_found_regardless_of_rank(self):
+        """
+        Every drug in drugs_of_interest must appear in specific dict,
+        even if it ranks below top_n.
+        """
+        predictor, model, data, doi = self._build_data_and_predictor()
+        # top_n=1 means only the #1 drug enters the table, but all 3 DOI
+        # must still be in specific
+        _, specific = predictor.get_drug_ranks(
+            model, data, "MONDO:CASTLEMAN", doi, top_n=1
+        )
+        for drug_id in doi:
+            assert drug_id in specific, (
+                f"Drug {drug_id} missing from specific — "
+                "explicit tracking failed for out-of-table drug"
+            )
+
+    def test_specific_rank_matches_table_for_top_drug(self):
+        """
+        If a drug of interest is also in the top_n_table, its rank in
+        specific must equal its rank in the table.
+        """
+        predictor, model, data, doi = self._build_data_and_predictor()
+        top_n_table, specific = predictor.get_drug_ranks(
+            model, data, "MONDO:CASTLEMAN", doi, top_n=3
+        )
+        # All 3 drugs must appear in both
+        table_ranks = {row["drug_id"]: row["rank"] for row in top_n_table}
+        for drug_id in doi:
+            if drug_id in table_ranks:
+                assert specific[drug_id]["rank"] == table_ranks[drug_id], (
+                    f"Rank mismatch for {drug_id}: "
+                    f"table says {table_ranks[drug_id]}, "
+                    f"specific says {specific[drug_id]['rank']}"
+                )
+
+    def test_top_n_table_sorted_descending(self):
+        """top_n_table must be sorted by score descending (rank 1 is highest score)."""
+        predictor, model, data, doi = self._build_data_and_predictor()
+        top_n_table, _ = predictor.get_drug_ranks(
+            model, data, "MONDO:CASTLEMAN", doi, top_n=3
+        )
+        scores = [row["score"] for row in top_n_table]
+        assert scores == sorted(scores, reverse=True), (
+            f"top_n_table is not sorted descending: {scores}"
+        )
+
+    def test_name_from_graph_in_specific(self):
+        """
+        specific dict must include drug name from the graph node attribute,
+        not the raw drug_id string.
+        """
+        predictor, model, data, doi = self._build_data_and_predictor()
+        _, specific = predictor.get_drug_ranks(
+            model, data, "MONDO:CASTLEMAN", doi, top_n=1
+        )
+        # "CHEMBL.COMPOUND:ADA" -> node name "Adalimumab" (from make_synthetic_graph)
+        ada_info = specific.get("CHEMBL.COMPOUND:ADA", {})
+        assert ada_info.get("name") == "Adalimumab", (
+            f"Expected name 'Adalimumab' from graph, got {ada_info.get('name')!r}"
+        )
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
