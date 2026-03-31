@@ -239,7 +239,10 @@ class CompositeNodeBuilder:
                 'uniprot_id': str,
                 'raw_tstat': float,
             }
-            Only includes pairs where tstat > 0.
+            Only includes pairs where abs(tstat) > 0.
+            raw_tstat stores abs(tstat) — direction (up/down in flare) is
+            ignored because any differential expression is evidence of
+            cell-type involvement regardless of sign.
         """
         result: Dict[Tuple[str, str], Dict] = {}
 
@@ -272,10 +275,11 @@ class CompositeNodeBuilder:
                     except ValueError:
                         tstat = 0.0
 
-                    if tstat > 0:
+                    abs_tstat = abs(tstat)
+                    if abs_tstat > 0:
                         result[(gene_symbol, ct)] = {
                             "uniprot_id": uniprot_id,
-                            "raw_tstat": tstat,
+                            "raw_tstat": abs_tstat,
                         }
 
         return result

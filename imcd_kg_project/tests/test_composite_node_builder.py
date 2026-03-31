@@ -397,6 +397,38 @@ class TestAllGenesMode:
         assert G2.has_edge(CASTLEMAN, comp_id), "Missing Castleman->composite edge"
         assert G2.has_edge(comp_id, non_neighbor), "Missing composite->protein edge"
 
+    def test_negative_tstat_included_as_abs_value(self):
+        """
+        A gene with a negative t-stat must produce a composite node.
+        raw_tstat must equal abs(tstat), not the original negative value.
+
+        This guards the Phase 5.6 change: the new CSV (file 2) uses
+        remission as reference, so up-regulated genes in remission have
+        negative t-stats. We include all differentially expressed genes
+        regardless of direction by using abs(tstat).
+        """
+        G = make_synthetic_graph()
+        mapper = make_mapper_for(G)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            # TNF t-stat = -5.0 (down in flare / up in remission)
+            csv_path = make_csv([
+                {"gene": "TNF", "B cells": 0, "ILC": 0,
+                 "Megakaryocytes/platelets": 0, "Monocytes": -5.0, "T cells": 0},
+            ], tmp)
+            builder = CompositeNodeBuilder(castleman_id=CASTLEMAN, min_tstat=2.0)
+            result = builder.build(G, mapper, csv_path)
+
+        assert result.n_composite_nodes == 1, (
+            "Negative t-stat gene should produce a composite node via abs(tstat)"
+        )
+        node = result.composite_nodes[0]
+        assert node.raw_tstat == 5.0, (
+            f"raw_tstat should be abs(-5.0)=5.0, got {node.raw_tstat}"
+        )
+        assert node.gene_symbol == "TNF"
+        assert node.cell_type == "Monocytes"
+
     def test_cell_type_filter_limits_composite_nodes(self):
         """
         Passing cell_types=["Monocytes"] should create only Monocyte

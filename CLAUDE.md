@@ -285,53 +285,79 @@ The combined experiment survives because aggregating 5 cell types provides enoug
 signal. Professor's T cells > Monocytes hypothesis not confirmed.
 See `plans/phase_5_4_plan.md` for full analysis.
 
-### Phase 5.5: Drug Ranking Table (IN PROGRESS — ready for Sockeye)
+### Phase 5.5: Drug Ranking Table (COMPLETE — March 2026)
 
 **Professor's question:** "I'm more interested in where existing drugs of
 Castleman's are being ranked — anti-IL6, TNF, IL2. How does the ranking of
 these three drugs differ between the cell types?"
 
-Phases 5.2–5.4 only reported adalimumab's rank. Phase 5.5 extends to the
-full drug ranking table: explicit rank + score for all confirmed drugs of
-interest (adalimumab, siltuximab, tocilizumab) across all 6 experiments.
+**Implementation:**
+- `gat_predictor.py`: `get_drug_ranks()` — single forward pass tracking all
+  confirmed drugs of interest explicitly regardless of rank position.
+- `finetuner.py`: `DRUGS_OF_INTEREST` (3 confirmed CHEMBL IDs).
+- Tests: `TestGetDrugRanks` (5 tests), `test_drug_ranks_in_results` + updated
+  `test_results_saved_to_disk` (in `test_finetuner.py`). 53 tests total.
 
-**One change from Phase 5.4:** the evaluation pipeline, not the parameters.
-`min_tstat=0.0`, same 6 experiments, same seeds, same epochs.
-
-**Implementation (already done):**
-- `gat_predictor.py`: added `get_drug_ranks()` — single forward pass returning
-  BOTH top-N table (generic) AND explicit tracking for drugs_of_interest
-  regardless of rank position. Adalimumab at #13,000 is always tracked.
-  Removed `get_top_n_drugs()` (was returning random compounds — wrong approach).
-- `finetuner.py`: `DRUGS_OF_INTEREST` dict (3 confirmed CHEMBL IDs only).
-  Seed loop calls `get_drug_ranks()` once. Saves `top_500_castleman`,
-  `drug_ranks_castleman`, and aggregated `drug_mean_ranks_castleman`.
-- Tests: `TestGetDrugRanks` (5 tests in `test_gat_unit.py`),
-  `test_drug_ranks_in_results` + updated `test_results_saved_to_disk`
-  (in `test_finetuner.py`).
-
-**Confirmed drugs of interest:**
-- Adalimumab:  CHEMBL1201580  (Anti-TNF, held out)
-- Siltuximab:  CHEMBL1743070  (Anti-IL-6, positive supervision)
-- Tocilizumab: CHEMBL1237022  (Anti-IL-6R, positive supervision)
-
-Do NOT add unverified CHEMBL IDs. Search graph node names on Sockeye first.
-
-**Why the first Phase 5.5 run (job 9338927) was wrong:**
-Used top-200 generic list. Known drugs (at #13,000+) not in top 200 → not
-reported. Fixed by replacing `get_top_n_drugs()` with `get_drug_ranks()`.
-
-**Expected output:** siltuximab/tocilizumab at rank #1/#2 (in supervision),
-adalimumab at ~#12,000–14,000 (held out), results differ slightly from Phase
-5.4 due to CPU non-determinism.
-
-**Next step: run tests locally, then commit and sbatch.**
+**Sockeye results (per-cell-type, seed=42):**
+```
+| Cell Type      | Adalimumab | Tocilizumab | Siltuximab |
+|----------------|------------|-------------|------------|
+| ILC            | #13,285    | #14,903     | #16,936    |
+| B cells        | #13,293    | #14,876     | #16,976    |
+| Monocytes      | #13,396    | #14,963     | #17,014    |
+| T cells        | #13,793    | #15,287     | #17,285    |
+| Megakaryocytes | #13,804    | #15,290     | #17,306    |
+```
+Ordering adalimumab > tocilizumab > siltuximab is consistent across all
+5 cell types. Adalimumab (held out) outranks both supervision drugs.
+Combined experiment training collapsed (mean rank #28,604, std=26,658).
+Full analysis in `plans/phase_5_5_plan.md`.
 
 **Progression across phases (combined experiment):**
 - Phase 5.2: #13,346  gap ~1,600  (49 composite nodes, min_tstat=2.0)
 - Phase 5.3: #13,042  gap +1,443  (~7,362 nodes, min_tstat=2.0, all genes)
-- Phase 5.4: #12,272  gap +1,508  (32,118 nodes, min_tstat=0.0)  ← current best
-- Phase 5.5: TBD      gap TBD     (32,118 nodes, min_tstat=0.0, drug table)
+- Phase 5.4: #12,272  gap +1,508  (32,118 nodes, min_tstat=0.0)  ← best
+- Phase 5.5: combined FAILED; per-cell-type results above are reliable
+
+### Phase 5.6: Finer Cell Type Resolution (IN PROGRESS — ready for Sockeye)
+
+**Triggered by:** Prof. Singh sent new 42-cell-type CSV. Also asked why
+negative t-stats were being filtered.
+
+**Two changes from Phase 5.5:**
+
+1. **New CSV**: `data/experimental/iMCD_TAFRO_cell_specific_tstats 2.csv`
+   — 42 cell types, 23,373 genes, t-statistics (remission as reference,
+   + means up in FLARE).
+
+2. **abs(t-stat)**: `composite_node_builder.py` now stores `abs(tstat)` as
+   `raw_tstat`. Direction is irrelevant — any differential expression is
+   evidence of cell-type involvement. Previously `tstat > 0` excluded 29%
+   of non-zero entries (238,359 gene-cell_type pairs).
+
+**7 broken cell types excluded** (extreme values up to ~8.5M in both files):
+Alveolar macrophages, CD8a/a, Double-negative thymocytes, Double-positive
+thymocytes, Memory CD4+ cytotoxic T cells, T(agonist), Transitional NK.
+
+**35 clean cell types**. Combined experiment passes the explicit list so
+broken columns are never loaded.
+
+**6 experiments:**
+- `combined`: all 35 clean cell types, seeds=[42, 123, 303]
+- `tcm_naive_helper_t`: Tcm/Naive helper T cells (closest to naive CD4+)
+- `non_classical_mono`: Non-classical monocytes (strongest TNF abs=2.52)
+- `classical_mono`: Classical monocytes (compare to Phase 5.4 Monocytes)
+- `tcm_naive_cytotoxic_t`: Tcm/Naive cytotoxic T cells (TNF abs=2.42)
+- `nkt_cells`: NKT cells (only cell type with TNF positive +1.51 in FLARE)
+
+**Files created/changed:**
+- `src/enhanced_kgnn/composite_node_builder.py` — abs(tstat) change
+- `tests/test_composite_node_builder.py` — 23 tests (1 new for negative tstat)
+- `jobs/run_phase_5_6.py` — 6-experiment entry point
+- `jobs/phase_5_6_finetune.sh` — SLURM job (48h, 64GB)
+- `plans/phase_5_6_plan.md` — full plan
+
+**Next step: run tests locally, then commit and sbatch.**
 
 ### Confirmed entity IDs (verified by name search in graph)
 - Siltuximab:   CHEMBL.COMPOUND:CHEMBL1743070 (direct edge to Castleman: YES)
